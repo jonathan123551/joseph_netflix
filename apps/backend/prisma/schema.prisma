@@ -44,6 +44,7 @@ model User {
   reviews        Review[]
   favorites      Favorite[]
   auditLogs      AuditLog[]
+  refreshTokens  RefreshToken[]
 }
 
 model Movie {
@@ -69,6 +70,10 @@ model Movie {
   watchHistory    WatchHistory[]
   reviews         Review[]
   favorites       Favorite[]
+  movieFiles      MovieFile[]
+
+  @@index([published])
+  @@index([featured])
 }
 
 model MovieAsset {
@@ -77,6 +82,19 @@ model MovieAsset {
   type      AssetType
   url       String
   movie     Movie     @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@index([movieId])
+}
+
+model MovieFile {
+  id        String   @id @default(uuid())
+  movieId   String
+  url       String
+  quality   String   // e.g., "1080p", "4K"
+  sizeBytes BigInt?
+  createdAt DateTime @default(now())
+
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
 
   @@index([movieId])
 }
@@ -161,6 +179,7 @@ model WatchHistory {
 
   @@index([userId])
   @@index([movieId])
+  @@unique([userId, movieId])
 }
 
 model Donation {
@@ -189,6 +208,7 @@ model Review {
 
   @@index([userId])
   @@index([movieId])
+  @@unique([userId, movieId])
 }
 
 model Favorite {
@@ -208,10 +228,22 @@ model AuditLog {
   id        String   @id @default(uuid())
   userId    String?
   action    String
-  details   String?
+  details   Json?
   createdAt DateTime @default(now())
 
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
