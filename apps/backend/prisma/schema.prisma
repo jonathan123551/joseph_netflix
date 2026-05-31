@@ -90,9 +90,13 @@ model MovieFile {
   id        String   @id @default(uuid())
   movieId   String
   url       String
-  quality   String   // e.g., "1080p", "4K"
-  sizeBytes BigInt?
-  createdAt DateTime @default(now())
+  quality         String   // e.g., "1080p", "4K"
+  sizeBytes       BigInt?
+  mimeType        String?
+  duration        Int?
+  storageProvider String?
+  storagePath     String?
+  createdAt       DateTime @default(now())
 
   movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
 
@@ -104,6 +108,8 @@ model Actor {
   name      String
   image     String?
   movies    MovieActor[]
+
+  @@index([name])
 }
 
 model MovieActor {
@@ -238,8 +244,8 @@ model AuditLog {
 
 model RefreshToken {
   id        String   @id @default(uuid())
-  token     String   @unique
-  userId    String
+  tokenHash  String
+  userId     String
   expiresAt DateTime
   createdAt DateTime @default(now())
 
