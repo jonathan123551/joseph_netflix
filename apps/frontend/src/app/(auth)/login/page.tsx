@@ -13,7 +13,7 @@ const loginSchema = z.object({
 export default function LoginPage() {
   const router = useRouter();
   const form = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(loginSchema as any),
     defaultValues: { email: '', password: '' },
   });
 
