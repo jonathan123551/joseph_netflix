@@ -1,0 +1,197 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MODERATOR
+  USER
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum AssetType {
+  POSTER
+  BANNER
+  ACTOR_POSTER
+  THUMBNAIL
+}
+
+model User {
+  id             String         @id @default(uuid())
+  name           String
+  email          String         @unique
+  password       String
+  role           Role           @default(USER)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  purchases      Purchase[]
+  watchSessions  WatchSession[]
+  watchHistory   WatchHistory[]
+  donations      Donation[]
+  reviews        Review[]
+  favorites      Favorite[]
+  auditLogs      AuditLog[]
+}
+
+model Movie {
+  id              String           @id @default(uuid())
+  title           String
+  slug            String           @unique
+  description     String?
+  duration        Int              // in minutes
+  trailerUrl      String?
+  ageRating       String?
+  releaseDate     DateTime?
+  price           Decimal          @db.Decimal(10, 2)
+  featured        Boolean          @default(false)
+  published       Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  assets          MovieAsset[]
+  actors          MovieActor[]
+  categories      MovieCategory[]
+  purchases       Purchase[]
+  watchSessions   WatchSession[]
+  watchHistory    WatchHistory[]
+  reviews         Review[]
+  favorites       Favorite[]
+}
+
+model MovieAsset {
+  id        String    @id @default(uuid())
+  movieId   String
+  type      AssetType
+  url       String
+  movie     Movie     @relation(fields: [movieId], references: [id], onDelete: Cascade)
+}
+
+model Actor {
+  id        String       @id @default(uuid())
+  name      String
+  image     String?
+  movies    MovieActor[]
+}
+
+model MovieActor {
+  movieId   String
+  actorId   String
+  movie     Movie   @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  actor     Actor   @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@id([movieId, actorId])
+}
+
+model Category {
+  id        String          @id @default(uuid())
+  name      String
+  slug      String          @unique
+  movies    MovieCategory[]
+}
+
+model MovieCategory {
+  movieId    String
+  categoryId String
+  movie      Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([movieId, categoryId])
+}
+
+model Purchase {
+  id            String        @id @default(uuid())
+  userId        String
+  movieId       String
+  paymentStatus PaymentStatus @default(PENDING)
+  amount        Decimal       @db.Decimal(10, 2)
+  paidAt        DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie         Movie         @relation(fields: [movieId], references: [id], onDelete: Cascade)
+}
+
+model WatchSession {
+  id         String    @id @default(uuid())
+  userId     String
+  movieId    String
+  startedAt  DateTime  @default(now())
+  expiresAt  DateTime
+  completed  Boolean   @default(false)
+  active     Boolean   @default(true)
+  deviceInfo String?
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie      Movie     @relation(fields: [movieId], references: [id], onDelete: Cascade)
+}
+
+model WatchHistory {
+  id           String   @id @default(uuid())
+  userId       String
+  movieId      String
+  progressSecs Int      @default(0)
+  lastWatched  DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie        Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+}
+
+model Donation {
+  id        String        @id @default(uuid())
+  userId    String
+  amount    Decimal       @db.Decimal(10, 2)
+  status    PaymentStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  movieId   String
+  rating    Int      @default(0) // 1 to 5
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String
+  movieId   String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}

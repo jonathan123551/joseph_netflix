@@ -1,0 +1,8 @@
+{
+  "name": "@christian-movies/shared-types",
+  "version": "1.0.0",
+  "main": "index.js",
+  "types": "index.ts",
+  "license": "MIT",
+  "dependencies": {}
+}
