@@ -7,7 +7,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -78,6 +77,8 @@ model MovieAsset {
   type      AssetType
   url       String
   movie     Movie     @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@index([movieId])
 }
 
 model Actor {
@@ -94,6 +95,7 @@ model MovieActor {
   actor     Actor   @relation(fields: [actorId], references: [id], onDelete: Cascade)
 
   @@id([movieId, actorId])
+  @@index([actorId])
 }
 
 model Category {
@@ -110,6 +112,7 @@ model MovieCategory {
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@id([movieId, categoryId])
+  @@index([categoryId])
 }
 
 model Purchase {
@@ -122,8 +125,11 @@ model Purchase {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Restrict)
   movie         Movie         @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([movieId])
 }
 
 model WatchSession {
@@ -138,6 +144,9 @@ model WatchSession {
 
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   movie      Movie     @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([movieId])
 }
 
 model WatchHistory {
@@ -149,6 +158,9 @@ model WatchHistory {
 
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   movie        Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([movieId])
 }
 
 model Donation {
@@ -158,7 +170,9 @@ model Donation {
   status    PaymentStatus @default(PENDING)
   createdAt DateTime      @default(now())
 
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
 }
 
 model Review {
@@ -172,6 +186,9 @@ model Review {
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([movieId])
 }
 
 model Favorite {
@@ -184,6 +201,7 @@ model Favorite {
   movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
 
   @@unique([userId, movieId])
+  @@index([movieId])
 }
 
 model AuditLog {
@@ -194,4 +212,6 @@ model AuditLog {
   createdAt DateTime @default(now())
 
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
 }
