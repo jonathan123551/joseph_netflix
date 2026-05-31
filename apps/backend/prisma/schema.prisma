@@ -74,6 +74,8 @@ model Movie {
 
   @@index([published])
   @@index([featured])
+  @@index([title])
+  @@index([releaseDate])
 }
 
 model MovieAsset {
@@ -96,6 +98,7 @@ model MovieFile {
   duration        Int?
   storageProvider String?
   storagePath     String?
+  isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
 
   movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
@@ -247,7 +250,10 @@ model RefreshToken {
   tokenHash  String
   userId     String
   expiresAt DateTime
-  createdAt DateTime @default(now())
+  revokedAt  DateTime?
+  deviceInfo String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
