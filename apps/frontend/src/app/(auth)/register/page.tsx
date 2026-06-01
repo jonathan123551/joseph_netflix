@@ -1,93 +1,111 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { CinematicButton } from "@/components/ui/CinematicButton";
 import { featuredMovie } from "@/lib/mockData";
+import { CheckCircle2 } from "lucide-react";
 
 export default function RegisterPage() {
-  const [step, setStep] = useState(1);
-
-  const handleNext = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (step === 1) setStep(2);
-    else window.location.href = "/dashboard"; // Mock redirect
+    window.location.href = "/dashboard"; // Mock redirect
   };
 
   return (
     <div className="relative min-h-screen flex items-center justify-center p-4">
-      {/* Background */}
+      {/* Cinematic Background */}
       <div className="absolute inset-0 z-0">
         <img 
           src={featuredMovie.bannerUrl} 
           alt="Background" 
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover opacity-80"
         />
-        <div className="absolute inset-0 bg-black/70 backdrop-blur-md" />
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/80" />
       </div>
 
-      {/* Form Card */}
+      {/* Glassmorphic Form Card */}
       <motion.div 
-        key={step}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="relative z-10 w-full max-w-md"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="relative z-10 w-full max-w-[900px] flex flex-col md:flex-row overflow-hidden rounded-3xl border border-white/20 bg-black/40 backdrop-blur-3xl shadow-[0_0_80px_rgba(255,255,255,0.05)]"
       >
-        <div className="bg-zinc-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-8 md:p-10 shadow-2xl">
-          <div className="mb-8">
-            <p className="text-white/50 text-sm font-medium uppercase tracking-widest mb-2">Step {step} of 2</p>
-            <h1 className="text-3xl font-bold text-white tracking-tight">
-              {step === 1 ? "Create a password to start your membership" : "Choose your plan"}
-            </h1>
-            {step === 1 && <p className="text-white/70 mt-3">Just a few more steps and you're done! We hate paperwork, too.</p>}
-          </div>
+        {/* Value Proposition Sidebar */}
+        <div className="w-full md:w-5/12 bg-white/5 p-8 md:p-12 border-b md:border-b-0 md:border-r border-white/10 flex flex-col justify-center">
+          <h2 className="text-3xl font-bold text-white mb-6 tracking-tight">Create Free Account</h2>
+          <p className="text-white/70 mb-8 font-light leading-relaxed">
+            Join Joseph Netflix today. No subscriptions. No hidden fees. Pay only for what you watch.
+          </p>
           
-          <form onSubmit={handleNext} className="space-y-5">
-            {step === 1 ? (
-              <>
-                <div className="space-y-2">
-                  <input 
-                    type="email" 
-                    className="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-4 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
-                    placeholder="Email address"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <input 
-                    type="password" 
-                    className="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-4 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
-                    placeholder="Add a password"
-                    required
-                  />
-                </div>
-              </>
-            ) : (
-              <div className="space-y-4">
-                <div className="border-2 border-white/20 rounded-xl p-4 cursor-pointer hover:border-white/50 transition-colors bg-white/5">
-                  <h3 className="text-white font-bold text-lg">Premium</h3>
-                  <p className="text-white/60 text-sm mt-1">4K + HDR, 4 devices</p>
-                  <p className="text-white font-semibold mt-3">$19.99 / month</p>
-                </div>
-                <div className="border border-white/10 rounded-xl p-4 cursor-pointer hover:border-white/30 transition-colors">
-                  <h3 className="text-white font-bold text-lg">Standard</h3>
-                  <p className="text-white/60 text-sm mt-1">1080p, 2 devices</p>
-                  <p className="text-white font-semibold mt-3">$14.99 / month</p>
-                </div>
-              </div>
-            )}
+          <ul className="space-y-5 text-white/80">
+            {[
+              "Purchase premium Christian movies",
+              "Rent exclusive faith-based content",
+              "Support Christian creators directly",
+              "Donate to partner ministries"
+            ].map((benefit, i) => (
+              <motion.li 
+                key={i}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + (i * 0.1) }}
+                className="flex items-center gap-3 font-medium"
+              >
+                <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
+                <span>{benefit}</span>
+              </motion.li>
+            ))}
+          </ul>
+        </div>
 
-            <CinematicButton type="submit" size="lg" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-lg mt-6 h-14">
-              {step === 1 ? "Next" : "Start Membership"}
+        {/* Registration Form */}
+        <div className="w-full md:w-7/12 p-8 md:p-12">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-white/70 ml-1">Full Name</label>
+              <input 
+                type="text" 
+                className="w-full bg-white/5 border border-white/20 rounded-xl px-5 py-4 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all shadow-inner"
+                placeholder="John Doe"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-white/70 ml-1">Email Address</label>
+              <input 
+                type="email" 
+                className="w-full bg-white/5 border border-white/20 rounded-xl px-5 py-4 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all shadow-inner"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-white/70 ml-1">Password</label>
+              <input 
+                type="password" 
+                className="w-full bg-white/5 border border-white/20 rounded-xl px-5 py-4 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all shadow-inner"
+                placeholder="Create a strong password"
+                required
+              />
+            </div>
+
+            <CinematicButton 
+              type="submit" 
+              size="lg" 
+              className="w-full bg-gradient-to-r from-primary/90 to-primary text-primary-foreground hover:from-primary hover:to-primary/90 font-bold text-lg mt-8 h-14 shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] transition-all rounded-xl"
+            >
+              Start Watching Now
             </CinematicButton>
           </form>
 
-          <div className="mt-8 text-center text-white/50 text-sm border-t border-white/10 pt-6">
+          <div className="mt-8 text-center text-white/50 text-sm">
             Already have an account?{" "}
-            <Link href="/login" className="text-white hover:underline font-medium ml-1">
-              Sign In.
+            <Link href="/login" className="text-white hover:text-primary transition-colors font-semibold ml-1">
+              Sign In
             </Link>
           </div>
         </div>
