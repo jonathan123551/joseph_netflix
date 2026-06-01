@@ -1,103 +1,69 @@
 "use client";
 
-import { use, useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
-import Link from "next/link";
-import { ArrowLeft, Play, Maximize, Volume2, Settings, SkipForward } from "lucide-react";
-import { mockMovies } from "@/lib/mockData";
+import { use, useState, useEffect } from "react";
+import { CinematicPlayer } from "@/components/shared/CinematicPlayer";
+import { Movie, mockMovies } from "@/lib/mockData";
 import { MovieRow } from "@/components/shared/MovieRow";
 import { api } from "@/lib/api";
-
-function formatTime(totalSecs: number): string {
-  const h = Math.floor(totalSecs / 3600);
-  const m = Math.floor((totalSecs % 3600) / 60);
-  const s = Math.floor(totalSecs % 60);
-  return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-}
+import { useRouter } from "next/navigation";
 
 export default function WatchPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const movie = mockMovies.find(m => m.id === resolvedParams.id) || mockMovies[0];
-  const recommended = mockMovies.filter(m => m.id !== movie.id).slice(2, 7);
-  const [elapsed, setElapsed] = useState(0);
-  const elapsedRef = useRef(0);
+  const movieId = resolvedParams.id;
+  const router = useRouter();
+  
+  const [movie, setMovie] = useState<Movie | null>(null);
+  const [recommended, setRecommended] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Simulate playback and persist watch progress to the backend.
   useEffect(() => {
-    void api.updateWatchProgress(movie.id, 0);
-    const tick = setInterval(() => {
-      elapsedRef.current += 1;
-      setElapsed(elapsedRef.current);
-    }, 1000);
-    const sync = setInterval(() => {
-      void api.updateWatchProgress(movie.id, elapsedRef.current);
-    }, 5000);
-    return () => {
-      clearInterval(tick);
-      clearInterval(sync);
-      void api.updateWatchProgress(movie.id, elapsedRef.current);
-    };
-  }, [movie.id]);
+    async function loadMovie() {
+      try {
+        const details = await api.getMovieDetails(movieId);
+        if (details) {
+          setMovie(details);
+          setRecommended(mockMovies.filter(m => m.id !== details.id).slice(2, 7));
+        }
+      } catch (err) {
+        console.warn("Could not load watch details, falling back to mock.");
+        const fallback = mockMovies.find(m => m.id === movieId) || mockMovies[0];
+        setMovie(fallback);
+        setRecommended(mockMovies.filter(m => m.id !== fallback.id).slice(2, 7));
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadMovie();
+  }, [movieId]);
+
+  const handleBack = () => {
+    if (movie) {
+      router.push(`/movie/${movie.id}`);
+    } else {
+      router.push("/");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white/40 font-serif tracking-widest text-lg uppercase animate-pulse">Loading theatre...</div>
+      </div>
+    );
+  }
+
+  if (!movie) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center text-white">
+        Presentation not found.
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Video Player Area */}
-      <div className="relative w-full h-[60vh] md:h-[80vh] bg-black group">
-        {/* Placeholder Video Background */}
-        <img 
-          src={movie.bannerUrl} 
-          alt={movie.title}
-          className="w-full h-full object-cover opacity-50"
-        />
-        
-        {/* Top Overlay - Back Button */}
-        <div className="absolute top-0 left-0 w-full p-6 bg-gradient-to-b from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-          <Link href={`/movie/${movie.id}`} className="inline-flex items-center gap-2 text-white hover:text-white/80 transition-colors">
-            <ArrowLeft className="w-8 h-8" />
-            <span className="text-lg font-medium tracking-wide">Back to Browse</span>
-          </Link>
-        </div>
-
-        {/* Center Play Button (Simulated Paused State) */}
-        <div className="absolute inset-0 flex items-center justify-center z-10">
-          <motion.button 
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="w-20 h-20 md:w-24 md:h-24 bg-black/40 backdrop-blur-md rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-white hover:text-black transition-colors"
-          >
-            <Play className="w-10 h-10 md:w-12 md:h-12 fill-current ml-2" />
-          </motion.button>
-        </div>
-
-        {/* Bottom Player Controls */}
-        <div className="absolute bottom-0 left-0 w-full px-6 py-8 bg-gradient-to-t from-black via-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex flex-col gap-4">
-          
-          {/* Progress Bar */}
-          <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden cursor-pointer">
-            <div className="h-full bg-red-600 w-1/3 relative">
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-red-600 rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]" />
-            </div>
-          </div>
-
-          {/* Controls */}
-          <div className="flex items-center justify-between text-white">
-            <div className="flex items-center gap-6">
-              <button><Play className="w-8 h-8 fill-white" /></button>
-              <button><SkipForward className="w-7 h-7 fill-white" /></button>
-              <button><Volume2 className="w-7 h-7" /></button>
-              <div className="text-lg font-medium ml-4">
-                {movie.title}
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-6">
-              <span className="text-white/70 font-mono">{formatTime(elapsed)} / {movie.duration}</span>
-              <button><Settings className="w-7 h-7" /></button>
-              <button><Maximize className="w-7 h-7" /></button>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Real Cinematic Player */}
+      <CinematicPlayer movie={movie} onBack={handleBack} />
 
       {/* Recommended Below Player */}
       <div className="py-12 bg-zinc-950">

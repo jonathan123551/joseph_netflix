@@ -398,6 +398,13 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
 
                 {/* Additional Utilities */}
                 <div className="flex items-center justify-between text-xs text-white/40 pt-4 border-t border-white/5">
+                  <button 
+                    onClick={handleToggleFavorite}
+                    className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <Heart className={`w-3.5 h-3.5 ${isFavorite ? "fill-red-500 text-red-500" : ""}`} />
+                    {isFavorite ? "In Watchlist" : "Add Watchlist"}
+                  </button>
                   <button className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
                     <Share2 className="w-3.5 h-3.5" /> Share Film
                   </button>
