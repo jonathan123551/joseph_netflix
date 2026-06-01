@@ -19,6 +19,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
   const [customDonation, setCustomDonation] = useState("");
   const [checkoutStep, setCheckoutStep] = useState<"idle" | "donated" | "purchased" | "rented">("idle");
   const [isPlayingTrailer, setIsPlayingTrailer] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   // Fetch movie data from backend
   useEffect(() => {
@@ -30,6 +31,8 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
           const similar = mockMovies.filter(m => m.id !== details.id).slice(0, 5);
           setSimilarMovies(similar);
         }
+        const favorites = await api.getFavorites();
+        setIsFavorite(favorites.some((f) => f.id === movieId));
       } catch (err) {
         console.warn("Could not retrieve movie details from API. Using defaults.");
         const fallbackMovie = mockMovies.find(m => m.id === movieId) || mockMovies[0];
@@ -59,6 +62,22 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
       setTimeout(() => setCheckoutStep("idle"), 4000);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!movie) return;
+    const next = !isFavorite;
+    setIsFavorite(next);
+    try {
+      if (next) {
+        await api.addFavorite(movie.id);
+      } else {
+        await api.removeFavorite(movie.id);
+      }
+    } catch (err) {
+      console.error(err);
+      setIsFavorite(!next);
     }
   };
 
@@ -297,6 +316,28 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                   >
                     <Tv className="w-3.5 h-3.5 text-gold-400" />
                     $4.99
+                  </CinematicButton>
+                </div>
+
+                {/* My List (Favorites) */}
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between group hover:border-white/10 transition-colors">
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-white/80">My List</h4>
+                    <p className="text-[10px] text-white/40 font-light mt-0.5">
+                      {isFavorite ? "Saved to your favorites" : "Save for later"}
+                    </p>
+                  </div>
+                  <CinematicButton
+                    variant="glass"
+                    size="sm"
+                    onClick={handleToggleFavorite}
+                    aria-pressed={isFavorite}
+                    className="gap-2 bg-white/8 border-white/10 text-white"
+                  >
+                    <Heart
+                      className={`w-3.5 h-3.5 ${isFavorite ? "text-red-500 fill-red-500" : "text-white/70"}`}
+                    />
+                    {isFavorite ? "Saved" : "Add"}
                   </CinematicButton>
                 </div>
 

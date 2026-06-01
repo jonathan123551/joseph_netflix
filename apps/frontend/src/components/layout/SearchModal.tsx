@@ -4,15 +4,24 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, X } from "lucide-react";
 import Link from "next/link";
-import { mockMovies } from "@/lib/mockData";
+import { api } from "@/lib/api";
 
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+interface SearchResult {
+  id: string;
+  title: string;
+  posterUrl: string;
+  year: number;
+  rating: string;
+}
+
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchResult[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -22,6 +31,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     } else {
       document.body.style.overflow = "unset";
       setQuery("");
+      setResults([]);
     }
     
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -32,13 +42,22 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  const results = query.trim() === "" 
-    ? [] 
-    : mockMovies.filter(m => 
-        m.title.toLowerCase().includes(query.toLowerCase()) || 
-        m.cast.some(c => c.toLowerCase().includes(query.toLowerCase())) ||
-        m.genres.some(g => g.toLowerCase().includes(query.toLowerCase()))
-      );
+  // Debounced search against the backend (falls back to mock data on error)
+  useEffect(() => {
+    if (query.trim() === "") {
+      setResults([]);
+      return;
+    }
+    let cancelled = false;
+    const handle = setTimeout(async () => {
+      const data = await api.searchMovies(query);
+      if (!cancelled) setResults(data as SearchResult[]);
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
+  }, [query]);
 
   return (
     <AnimatePresence>
