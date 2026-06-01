@@ -10,6 +10,9 @@ import {
 } from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('movies')
@@ -49,15 +52,17 @@ export class MoviesController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Create movie (Admin only mock)' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Create movie (Admin only)' })
   create(@Body() data: any) {
     return this.moviesService.create(data);
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Update movie (Admin only mock)' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Update movie (Admin only)' })
   update(@Param('id') id: string, @Body() data: any) {
     return this.moviesService.update(id, data);
   }
