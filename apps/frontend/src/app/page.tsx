@@ -1,65 +1,82 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { motion } from "framer-motion";
+import { Play, Info } from "lucide-react";
+import { CinematicButton } from "@/components/ui/CinematicButton";
+import { MovieRow } from "@/components/shared/MovieRow";
+import { categories, featuredMovie } from "@/lib/mockData";
+import Link from "next/link";
+
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="relative min-h-screen bg-zinc-950 pb-20">
+      {/* Hero Section */}
+      <section className="relative h-[85vh] w-full">
+        {/* Background Image & Gradients */}
+        <div className="absolute inset-0">
+          <img
+            src={featuredMovie.bannerUrl}
+            alt={featuredMovie.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t-dark" />
+          <div className="absolute inset-0 bg-gradient-to-r-dark" />
+          <div className="absolute inset-0 bg-black/20" /> {/* Subtle darkening for text legibility */}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        {/* Hero Content */}
+        <div className="relative h-full flex flex-col justify-end px-4 md:px-12 pb-24 md:pb-32 max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-4 drop-shadow-2xl tracking-tighter">
+              {featuredMovie.title}
+            </h1>
+            
+            <div className="flex items-center gap-4 text-sm md:text-base text-white/80 mb-6 font-medium">
+              <span className="text-green-500 font-semibold">98% Match</span>
+              <span>{featuredMovie.year}</span>
+              <span className="border border-white/40 px-2 py-0.5 rounded-sm text-white/90">
+                {featuredMovie.rating}
+              </span>
+              <span>{featuredMovie.duration}</span>
+              <span className="border border-white/20 px-1 rounded-sm text-[10px]">HD</span>
+            </div>
+
+            <p className="text-lg md:text-xl text-white/90 drop-shadow-lg mb-8 line-clamp-3 max-w-2xl font-light leading-relaxed">
+              {featuredMovie.description}
+            </p>
+
+            <div className="flex items-center gap-4">
+              <Link href={`/watch/${featuredMovie.id}`}>
+                <CinematicButton size="lg" className="gap-2 px-8">
+                  <Play className="w-6 h-6 fill-black" />
+                  Play
+                </CinematicButton>
+              </Link>
+              <Link href={`/movie/${featuredMovie.id}`}>
+                <CinematicButton variant="glass" size="lg" className="gap-2 px-8">
+                  <Info className="w-6 h-6" />
+                  More Info
+                </CinematicButton>
+              </Link>
+            </div>
+          </motion.div>
         </div>
-      </main>
+      </section>
+
+      {/* Content Rows */}
+      <section className="relative z-10 -mt-24 space-y-8">
+        {categories.map((category) => (
+          <MovieRow 
+            key={category.id} 
+            title={category.title} 
+            movies={category.items} 
+          />
+        ))}
+      </section>
     </div>
   );
 }
