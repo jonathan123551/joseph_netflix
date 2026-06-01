@@ -1,9 +1,29 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { toMovieCard } from '../common/movie-card';
 
 @Injectable()
 export class MoviesService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async search(query: string) {
+    const q = query.trim();
+    if (!q) {
+      return [];
+    }
+    const movies = await this.prisma.movie.findMany({
+      where: {
+        published: true,
+        OR: [
+          { title: { contains: q, mode: 'insensitive' } },
+          { description: { contains: q, mode: 'insensitive' } },
+        ],
+      },
+      include: { assets: true },
+      take: 20,
+    });
+    return movies.map((m) => toMovieCard(m));
+  }
 
   async findAll() {
     return this.prisma.movie.findMany({

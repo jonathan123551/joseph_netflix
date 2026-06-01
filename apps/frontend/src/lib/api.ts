@@ -97,6 +97,43 @@ class ApiClient {
     return this.request<Movie>(`/movies/${id}`, {}, defaultMovie);
   }
 
+  async searchMovies(query: string): Promise<any[]> {
+    const q = query.trim();
+    if (!q) return [];
+    const fallback = mockMovies.filter(
+      (m) =>
+        m.title.toLowerCase().includes(q.toLowerCase()) ||
+        m.cast.some((c) => c.toLowerCase().includes(q.toLowerCase())) ||
+        m.genres.some((g) => g.toLowerCase().includes(q.toLowerCase())),
+    );
+    return this.request<any[]>(`/movies/search?q=${encodeURIComponent(q)}`, {}, fallback);
+  }
+
+  // FAVORITES API
+  async getFavorites(): Promise<any[]> {
+    return this.request<any[]>('/favorites', {}, []);
+  }
+
+  async addFavorite(movieId: string): Promise<any> {
+    return this.request('/favorites/' + movieId, { method: 'POST' }, { movieId, favorited: true });
+  }
+
+  async removeFavorite(movieId: string): Promise<any> {
+    return this.request('/favorites/' + movieId, { method: 'DELETE' }, { movieId, favorited: false });
+  }
+
+  // WATCH HISTORY API
+  async getWatchHistory(): Promise<any[]> {
+    return this.request<any[]>('/watch-history', {}, []);
+  }
+
+  async updateWatchProgress(movieId: string, progressSecs: number): Promise<any> {
+    return this.request('/watch-history', {
+      method: 'POST',
+      body: JSON.stringify({ movieId, progressSecs }),
+    }, { movieId, progressSecs, mock: true });
+  }
+
   // PURCHASES API
   async buyMovie(movieId: string): Promise<any> {
     return this.request('/purchases/buy', {

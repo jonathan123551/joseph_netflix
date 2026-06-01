@@ -1,7 +1,16 @@
-import { Controller, Get, Param, Post, Patch, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Patch,
+  Body,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('movies')
 @Controller('movies')
@@ -12,6 +21,13 @@ export class MoviesController {
   @ApiOperation({ summary: 'Get all published movies' })
   findAll() {
     return this.moviesService.findAll();
+  }
+
+  @Get('search')
+  @ApiOperation({ summary: 'Search published movies by title/description' })
+  @ApiQuery({ name: 'q', required: false })
+  search(@Query('q') q = '') {
+    return this.moviesService.search(q);
   }
 
   @Get('featured')

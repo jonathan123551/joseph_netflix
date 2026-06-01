@@ -10,6 +10,8 @@ import { PurchasesModule } from './purchases/purchases.module';
 import { DonationsModule } from './donations/donations.module';
 import { UsersModule } from './users/users.module';
 import { AdminModule } from './admin/admin.module';
+import { FavoritesModule } from './favorites/favorites.module';
+import { WatchHistoryModule } from './watch-history/watch-history.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { AdminModule } from './admin/admin.module';
     DonationsModule,
     UsersModule,
     AdminModule,
+    FavoritesModule,
+    WatchHistoryModule,
     ThrottlerModule.forRoot([{
       ttl: 60000,
       limit: 100, // Increase limits for demo dashboard loads

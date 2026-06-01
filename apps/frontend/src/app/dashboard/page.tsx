@@ -21,22 +21,25 @@ export default function DashboardPage() {
   });
   const [purchasedMovies, setPurchasedMovies] = useState<Movie[]>([]);
   const [contributions, setContributions] = useState<Contribution[]>([]);
+  const [favorites, setFavorites] = useState<Movie[]>([]);
+  const [continueWatching, setContinueWatching] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const favorites = mockMovies.filter(m => m.rating === "PG-13" || m.rating === "R").slice(0, 5);
-  const continueWatching = mockMovies.slice(0, 2);
 
   useEffect(() => {
     async function loadDashboardData() {
       try {
-        const [stats, library, supportHistory] = await Promise.all([
+        const [stats, library, supportHistory, favs, history] = await Promise.all([
           api.getProfileStats(),
           api.getMyLibrary(),
-          api.getMyContributions()
+          api.getMyContributions(),
+          api.getFavorites(),
+          api.getWatchHistory(),
         ]);
         if (stats) setProfileStats(stats);
         if (library) setPurchasedMovies(library);
         if (supportHistory) setContributions(supportHistory);
+        if (favs) setFavorites(favs as Movie[]);
+        if (history) setContinueWatching(history as Movie[]);
       } catch (err) {
         console.warn("Could not load dashboard data from API, using default mock presets.");
       } finally {
@@ -147,6 +150,11 @@ export default function DashboardPage() {
               Continue Watching
             </h2>
             
+            {continueWatching.length === 0 && (
+              <p className="text-white/40 text-sm font-light">
+                Nothing in progress yet. Press play on any title and it will appear here.
+              </p>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {continueWatching.map((movie, i) => (
                 <motion.div 
@@ -199,6 +207,11 @@ export default function DashboardPage() {
               Watchlist & Favorites
             </h2>
             
+            {favorites.length === 0 && (
+              <p className="text-white/40 text-sm font-light">
+                Your list is empty. Tap “Add” on any film to save it here.
+              </p>
+            )}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
               {favorites.map((movie, index) => (
                 <motion.div 

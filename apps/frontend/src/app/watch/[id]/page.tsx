@@ -1,16 +1,43 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowLeft, Play, Maximize, Volume2, Settings, SkipForward } from "lucide-react";
 import { mockMovies } from "@/lib/mockData";
 import { MovieRow } from "@/components/shared/MovieRow";
+import { api } from "@/lib/api";
+
+function formatTime(totalSecs: number): string {
+  const h = Math.floor(totalSecs / 3600);
+  const m = Math.floor((totalSecs % 3600) / 60);
+  const s = Math.floor(totalSecs % 60);
+  return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+}
 
 export default function WatchPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const movie = mockMovies.find(m => m.id === resolvedParams.id) || mockMovies[0];
   const recommended = mockMovies.filter(m => m.id !== movie.id).slice(2, 7);
+  const [elapsed, setElapsed] = useState(0);
+  const elapsedRef = useRef(0);
+
+  // Simulate playback and persist watch progress to the backend.
+  useEffect(() => {
+    void api.updateWatchProgress(movie.id, 0);
+    const tick = setInterval(() => {
+      elapsedRef.current += 1;
+      setElapsed(elapsedRef.current);
+    }, 1000);
+    const sync = setInterval(() => {
+      void api.updateWatchProgress(movie.id, elapsedRef.current);
+    }, 5000);
+    return () => {
+      clearInterval(tick);
+      clearInterval(sync);
+      void api.updateWatchProgress(movie.id, elapsedRef.current);
+    };
+  }, [movie.id]);
 
   return (
     <div className="min-h-screen bg-black">
@@ -64,7 +91,7 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
             </div>
             
             <div className="flex items-center gap-6">
-              <span className="text-white/70 font-mono">0:45:12 / {movie.duration}</span>
+              <span className="text-white/70 font-mono">{formatTime(elapsed)} / {movie.duration}</span>
               <button><Settings className="w-7 h-7" /></button>
               <button><Maximize className="w-7 h-7" /></button>
             </div>
