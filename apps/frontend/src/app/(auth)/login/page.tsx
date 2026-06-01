@@ -19,10 +19,12 @@ export default function LoginPage() {
 
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     // Calling backend API
-    const res = await fetch('http://localhost:3000/auth/login', {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-1871f.up.railway.app';
+    const res = await fetch(`${apiUrl}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(values),
+      credentials: 'include',
     });
     
     if (res.ok) {

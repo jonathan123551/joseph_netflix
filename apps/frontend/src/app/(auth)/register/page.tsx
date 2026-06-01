@@ -20,10 +20,12 @@ export default function RegisterPage() {
 
   const onSubmit = async (values: z.infer<typeof registerSchema>) => {
     // Calling backend API
-    const res = await fetch('http://localhost:3000/auth/register', {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-1871f.up.railway.app';
+    const res = await fetch(`${apiUrl}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(values),
+      credentials: 'include',
     });
     
     if (res.ok) {

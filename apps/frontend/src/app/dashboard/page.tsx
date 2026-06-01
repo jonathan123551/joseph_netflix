@@ -11,9 +11,10 @@ export default function DashboardPage() {
     // In a real application, you would fetch the user profile from the backend
     // using the HTTP-Only cookie to authenticate the request.
     const fetchProfile = async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-1871f.up.railway.app';
       try {
-        const res = await fetch('http://localhost:3000/auth/me', {
-          credentials: 'omit', // would be 'include' when testing with real backend
+        const res = await fetch(`${apiUrl}/auth/me`, {
+          credentials: 'include',
         });
         if (res.ok) {
           const data = await res.json();
@@ -29,7 +30,11 @@ export default function DashboardPage() {
   }, []);
 
   const handleLogout = async () => {
-    await fetch('http://localhost:3000/auth/logout', { method: 'POST' });
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-1871f.up.railway.app';
+    await fetch(`${apiUrl}/auth/logout`, { 
+      method: 'POST',
+      credentials: 'include',
+    });
     router.push('/login');
   };
 
