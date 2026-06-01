@@ -1,10 +1,74 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { PaymentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { toMovieCard } from '../common/movie-card';
+import { VIDEO_PROVIDER } from '../video/video-provider.interface';
+import type { VideoProvider } from '../video/video-provider.interface';
 
 @Injectable()
 export class MoviesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(VIDEO_PROVIDER) private readonly video: VideoProvider,
+  ) {}
+
+  /**
+   * Resolve a streamable playback source for a movie the user is entitled to
+   * (a COMPLETED purchase or an active, unexpired rental WatchSession).
+   * The URL is produced by the configured VideoProvider (local or Bunny.net).
+   */
+  async getPlayback(userId: string, movieId: string) {
+    const movie = await this.prisma.movie.findUnique({
+      where: { id: movieId },
+      select: { id: true, title: true, published: true },
+    });
+    if (!movie || !movie.published) {
+      throw new NotFoundException(`Movie with ID ${movieId} not found`);
+    }
+
+    const owns = await this.prisma.purchase.findFirst({
+      where: { userId, movieId, paymentStatus: PaymentStatus.COMPLETED },
+      select: { id: true },
+    });
+    const rental = owns
+      ? null
+      : await this.prisma.watchSession.findFirst({
+          where: {
+            userId,
+            movieId,
+            active: true,
+            expiresAt: { gt: new Date() },
+          },
+          select: { id: true },
+        });
+    if (!owns && !rental) {
+      throw new ForbiddenException(
+        'You must purchase or rent this movie to watch it',
+      );
+    }
+
+    const file = await this.prisma.movieFile.findFirst({
+      where: { movieId, isActive: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!file) {
+      throw new NotFoundException('No playable file available for this movie');
+    }
+
+    const source = this.video.getPlaybackSource({
+      url: file.url,
+      quality: file.quality,
+      storageProvider: file.storageProvider,
+      storagePath: file.storagePath,
+    });
+
+    return { movieId: movie.id, title: movie.title, ...source };
+  }
 
   async search(query: string) {
     const q = query.trim();

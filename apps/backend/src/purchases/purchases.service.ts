@@ -1,10 +1,15 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PaymentStatus } from '@prisma/client';
+import { PAYMENT_PROVIDER } from '../payments/payment-provider.interface';
+import type { PaymentProvider } from '../payments/payment-provider.interface';
 
 @Injectable()
 export class PurchasesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(PAYMENT_PROVIDER) private readonly payments: PaymentProvider,
+  ) {}
 
   async buyMovie(userId: string, movieId: string) {
     // Check if already purchased
@@ -28,13 +33,22 @@ export class PurchasesService {
       throw new NotFoundException(`Movie with ID ${movieId} not found`);
     }
 
+    const payment = await this.payments.createPayment({
+      userId,
+      amount: Number(movie.price),
+      kind: 'PURCHASE',
+      description: `Purchase: ${movie.title}`,
+      metadata: { movieId },
+    });
+
     return this.prisma.purchase.create({
       data: {
         userId,
         movieId,
         amount: movie.price,
-        paymentStatus: PaymentStatus.COMPLETED,
-        paidAt: new Date(),
+        paymentStatus: payment.status,
+        paidAt:
+          payment.status === PaymentStatus.COMPLETED ? new Date() : null,
       },
     });
   }
@@ -51,25 +65,36 @@ export class PurchasesService {
     // Rental cost is typically 4.99
     const rentalAmount = 4.99;
 
+    const payment = await this.payments.createPayment({
+      userId,
+      amount: rentalAmount,
+      kind: 'RENTAL',
+      description: `Rental: ${movie.title}`,
+      metadata: { movieId },
+    });
+
     const purchase = await this.prisma.purchase.create({
       data: {
         userId,
         movieId,
         amount: rentalAmount,
-        paymentStatus: PaymentStatus.COMPLETED,
-        paidAt: new Date(),
+        paymentStatus: payment.status,
+        paidAt:
+          payment.status === PaymentStatus.COMPLETED ? new Date() : null,
       },
     });
 
-    // Create a WatchSession for rentals (active for 30 days)
-    await this.prisma.watchSession.create({
-      data: {
-        userId,
-        movieId,
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-        active: true,
-      },
-    });
+    // Grant access via a WatchSession only once the rental payment clears.
+    if (payment.status === PaymentStatus.COMPLETED) {
+      await this.prisma.watchSession.create({
+        data: {
+          userId,
+          movieId,
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+          active: true,
+        },
+      });
+    }
 
     return purchase;
   }
