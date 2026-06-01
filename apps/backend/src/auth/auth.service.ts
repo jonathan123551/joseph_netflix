@@ -37,7 +37,13 @@ export class AuthService {
       },
     });
 
-    return this.generateTokens(user.id, user.email, user.role, ipAddress, deviceInfo);
+    return this.generateTokens(
+      user.id,
+      user.email,
+      user.role,
+      ipAddress,
+      deviceInfo,
+    );
   }
 
   async login(dto: LoginDto, ipAddress?: string, deviceInfo?: string) {
@@ -54,10 +60,20 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    return this.generateTokens(user.id, user.email, user.role, ipAddress, deviceInfo);
+    return this.generateTokens(
+      user.id,
+      user.email,
+      user.role,
+      ipAddress,
+      deviceInfo,
+    );
   }
 
-  async refreshTokens(oldRefreshToken: string, ipAddress?: string, deviceInfo?: string) {
+  async refreshTokens(
+    oldRefreshToken: string,
+    ipAddress?: string,
+    deviceInfo?: string,
+  ) {
     try {
       const payload = this.jwtService.verify(oldRefreshToken, {
         secret: process.env.JWT_REFRESH_SECRET || 'refresh-secret',
@@ -71,7 +87,7 @@ export class AuthService {
         },
       });
 
-      let matchedRecord = null;
+      let matchedRecord: (typeof tokenRecords)[number] | null = null;
       for (const record of tokenRecords) {
         if (await argon2.verify(record.tokenHash, oldRefreshToken)) {
           matchedRecord = record;
@@ -97,7 +113,13 @@ export class AuthService {
         throw new UnauthorizedException('User not found');
       }
 
-      return this.generateTokens(user.id, user.email, user.role, ipAddress, deviceInfo);
+      return this.generateTokens(
+        user.id,
+        user.email,
+        user.role,
+        ipAddress,
+        deviceInfo,
+      );
     } catch (e) {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
