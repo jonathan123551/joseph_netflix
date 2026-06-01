@@ -19,7 +19,9 @@ export class WatchHistoryController {
   constructor(private readonly watchHistoryService: WatchHistoryService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get the current user watch history (continue watching)' })
+  @ApiOperation({
+    summary: 'Get the current user watch history (continue watching)',
+  })
   list(@CurrentUser() user: JwtUser) {
     return this.watchHistoryService.list(user.sub);
   }

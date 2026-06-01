@@ -12,8 +12,20 @@ import { MoviesService } from './movies.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/user.decorator';
 import { Role } from '@prisma/client';
-import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiQuery,
+  ApiCookieAuth,
+} from '@nestjs/swagger';
+
+interface JwtUser {
+  sub: string;
+  email: string;
+  role: string;
+}
 
 @ApiTags('movies')
 @Controller('movies')
@@ -43,6 +55,14 @@ export class MoviesController {
   @ApiOperation({ summary: 'Get categorized movie rows' })
   getCategories() {
     return this.moviesService.getCategories();
+  }
+
+  @Get(':id/playback')
+  @UseGuards(JwtAuthGuard)
+  @ApiCookieAuth()
+  @ApiOperation({ summary: 'Get a playback source (requires purchase/rental)' })
+  getPlayback(@CurrentUser() user: JwtUser, @Param('id') id: string) {
+    return this.moviesService.getPlayback(user.sub, id);
   }
 
   @Get(':id')

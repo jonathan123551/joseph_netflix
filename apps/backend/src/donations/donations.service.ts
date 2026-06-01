@@ -1,17 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PaymentStatus } from '@prisma/client';
+import { PAYMENT_PROVIDER } from '../payments/payment-provider.interface';
+import type { PaymentProvider } from '../payments/payment-provider.interface';
 
 @Injectable()
 export class DonationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(PAYMENT_PROVIDER) private readonly payments: PaymentProvider,
+  ) {}
 
   async donate(userId: string, amount: number) {
+    const payment = await this.payments.createPayment({
+      userId,
+      amount,
+      kind: 'DONATION',
+      description: 'Donation to Joseph Films ministry',
+    });
+
     return this.prisma.donation.create({
       data: {
         userId,
         amount,
-        status: PaymentStatus.COMPLETED,
+        status: payment.status,
       },
     });
   }

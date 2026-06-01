@@ -12,10 +12,12 @@ import { UsersModule } from './users/users.module';
 import { AdminModule } from './admin/admin.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { WatchHistoryModule } from './watch-history/watch-history.module';
+import { PaymentsModule } from './payments/payments.module';
+import { VideoModule } from './video/video.module';
 
 @Module({
   imports: [
-    AuthModule, 
+    AuthModule,
     PrismaModule,
     MoviesModule,
     PurchasesModule,
@@ -24,13 +26,16 @@ import { WatchHistoryModule } from './watch-history/watch-history.module';
     AdminModule,
     FavoritesModule,
     WatchHistoryModule,
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 100, // Increase limits for demo dashboard loads
-    }]),
+    PaymentsModule,
+    VideoModule,
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100, // Increase limits for demo dashboard loads
+      },
+    ]),
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
-
