@@ -28,6 +28,15 @@ export interface Contribution {
   invoice: string;
 }
 
+export interface AdminStats {
+  totalUsers: number;
+  totalMovies: number;
+  totalDonations: number;
+  totalPurchaseRevenue: number;
+  totalRevenue: number;
+  recentLogs: { id: string; action: string; date: string; user: string }[];
+}
+
 class ApiClient {
   private getHeaders(isJson = true) {
     const headers: Record<string, string> = {};
@@ -86,6 +95,22 @@ class ApiClient {
   // MOVIES API
   async getFeaturedMovie(): Promise<Movie> {
     return this.request<Movie>('/movies/featured', {}, featuredMovie);
+  }
+
+  async getAllMovies(): Promise<any[]> {
+    return this.request<any[]>('/movies', {}, mockMovies);
+  }
+
+  // ADMIN API
+  async getAdminStats(): Promise<AdminStats> {
+    return this.request<AdminStats>('/admin/stats', {}, {
+      totalUsers: 2350,
+      totalMovies: 142,
+      totalDonations: 12500,
+      totalPurchaseRevenue: 32731.89,
+      totalRevenue: 45231.89,
+      recentLogs: [],
+    });
   }
 
   async getMovieCategories(): Promise<any[]> {

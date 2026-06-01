@@ -2,9 +2,59 @@
 
 import { motion } from "framer-motion";
 import { Users, Film, DollarSign, TrendingUp, Search, Bell, Settings } from "lucide-react";
-import { mockMovies } from "@/lib/mockData";
+import { useEffect, useState } from "react";
+import { api, AdminStats } from "@/lib/api";
+
+function currency(n: number): string {
+  return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
+}
+
+interface AdminMovie {
+  id: string;
+  title: string;
+  rating: string;
+  year: number;
+  posterUrl: string;
+  published: boolean;
+}
+
+function normalizeMovie(m: any): AdminMovie {
+  const poster =
+    m.posterUrl ||
+    (Array.isArray(m.assets)
+      ? m.assets.find((a: any) => a.type === "POSTER")?.url
+      : undefined) ||
+    "";
+  return {
+    id: m.id,
+    title: m.title,
+    rating: m.rating || m.ageRating || "NR",
+    year: m.year || (m.releaseDate ? new Date(m.releaseDate).getFullYear() : 2024),
+    posterUrl: poster,
+    published: m.published !== undefined ? m.published : true,
+  };
+}
 
 export default function AdminPage() {
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [movies, setMovies] = useState<AdminMovie[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      const [s, m] = await Promise.all([api.getAdminStats(), api.getAllMovies()]);
+      setStats(s);
+      setMovies(m.map(normalizeMovie));
+    }
+    load();
+  }, []);
+
+  const metrics = [
+    { label: "Total Revenue", value: stats ? currency(stats.totalRevenue) : "\u2014", icon: DollarSign, color: "text-green-500" },
+    { label: "Active Users", value: stats ? stats.totalUsers.toLocaleString() : "\u2014", icon: Users, color: "text-blue-500" },
+    { label: "Total Movies", value: stats ? stats.totalMovies.toLocaleString() : "\u2014", icon: Film, color: "text-purple-500" },
+    { label: "Donations", value: stats ? currency(stats.totalDonations) : "\u2014", icon: TrendingUp, color: "text-primary" },
+  ];
+
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col md:flex-row pt-16">
       {/* Sidebar */}
@@ -56,12 +106,7 @@ export default function AdminPage() {
 
         {/* Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          {[
-            { label: "Total Revenue", value: "$45,231.89", icon: DollarSign, color: "text-green-500" },
-            { label: "Active Users", value: "+2350", icon: Users, color: "text-blue-500" },
-            { label: "Total Movies", value: "142", icon: Film, color: "text-purple-500" },
-            { label: "Platform Growth", value: "+12.5%", icon: TrendingUp, color: "text-primary" }
-          ].map((stat, i) => (
+          {metrics.map((stat, i) => (
             <motion.div 
               key={i}
               initial={{ opacity: 0, y: 20 }}
@@ -98,7 +143,7 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
-                {mockMovies.slice(0, 5).map((movie) => (
+                {movies.slice(0, 5).map((movie) => (
                   <tr key={movie.id} className="hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4 flex items-center gap-3">
                       <img src={movie.posterUrl} alt={movie.title} className="w-10 h-14 object-cover rounded shadow" />
@@ -107,7 +152,11 @@ export default function AdminPage() {
                     <td className="px-6 py-4">{movie.rating}</td>
                     <td className="px-6 py-4">{movie.year}</td>
                     <td className="px-6 py-4">
-                      <span className="px-2 py-1 bg-green-500/10 text-green-500 text-xs rounded-full border border-green-500/20">Active</span>
+                      {movie.published ? (
+                        <span className="px-2 py-1 bg-green-500/10 text-green-500 text-xs rounded-full border border-green-500/20">Published</span>
+                      ) : (
+                        <span className="px-2 py-1 bg-yellow-500/10 text-yellow-500 text-xs rounded-full border border-yellow-500/20">Draft</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button className="text-white/40 hover:text-white transition-colors">Edit</button>
