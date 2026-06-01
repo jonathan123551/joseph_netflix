@@ -29,16 +29,16 @@ export class StripePaymentProvider implements PaymentProvider {
   readonly name = 'stripe';
   private readonly logger = new Logger(StripePaymentProvider.name);
 
-  async createPayment(input: PaymentIntentInput): Promise<PaymentResult> {
+  createPayment(input: PaymentIntentInput): Promise<PaymentResult> {
     if (!process.env.STRIPE_SECRET_KEY) {
       this.logger.warn(
-        'PAYMENT_PROVIDER=stripe but STRIPE_SECRET_KEY is not set; returning PENDING.',
+        `PAYMENT_PROVIDER=stripe but STRIPE_SECRET_KEY is not set; returning PENDING for ${input.kind}.`,
       );
     }
-    return {
+    return Promise.resolve({
       status: PaymentStatus.PENDING,
       reference: null,
       clientSecret: null,
-    };
+    });
   }
 }

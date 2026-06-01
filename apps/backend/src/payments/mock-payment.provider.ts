@@ -15,11 +15,11 @@ import {
 export class MockPaymentProvider implements PaymentProvider {
   readonly name = 'mock';
 
-  async createPayment(input: PaymentIntentInput): Promise<PaymentResult> {
-    return {
+  createPayment(input: PaymentIntentInput): Promise<PaymentResult> {
+    return Promise.resolve({
       status: PaymentStatus.COMPLETED,
       reference: `mock_${input.kind.toLowerCase()}_${randomUUID()}`,
       clientSecret: null,
-    };
+    });
   }
 }

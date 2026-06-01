@@ -176,7 +176,9 @@ export class MoviesService {
             description: cm.movie.description,
             duration: `${Math.floor(cm.movie.duration / 60)}h ${cm.movie.duration % 60}m`,
             rating: cm.movie.ageRating,
-            year: cm.movie.releaseDate ? new Date(cm.movie.releaseDate).getFullYear() : 2024,
+            year: cm.movie.releaseDate
+              ? new Date(cm.movie.releaseDate).getFullYear()
+              : 2024,
             bannerUrl: bannerAsset ? bannerAsset.url : '',
             posterUrl: posterAsset ? posterAsset.url : '',
             genres: [cat.name],

@@ -47,8 +47,7 @@ export class PurchasesService {
         movieId,
         amount: movie.price,
         paymentStatus: payment.status,
-        paidAt:
-          payment.status === PaymentStatus.COMPLETED ? new Date() : null,
+        paidAt: payment.status === PaymentStatus.COMPLETED ? new Date() : null,
       },
     });
   }
@@ -79,8 +78,7 @@ export class PurchasesService {
         movieId,
         amount: rentalAmount,
         paymentStatus: payment.status,
-        paidAt:
-          payment.status === PaymentStatus.COMPLETED ? new Date() : null,
+        paidAt: payment.status === PaymentStatus.COMPLETED ? new Date() : null,
       },
     });
 
@@ -124,7 +122,9 @@ export class PurchasesService {
         description: p.movie.description,
         duration: `${Math.floor(p.movie.duration / 60)}h ${p.movie.duration % 60}m`,
         rating: p.movie.ageRating,
-        year: p.movie.releaseDate ? new Date(p.movie.releaseDate).getFullYear() : 2024,
+        year: p.movie.releaseDate
+          ? new Date(p.movie.releaseDate).getFullYear()
+          : 2024,
         bannerUrl: bannerAsset ? bannerAsset.url : '',
         posterUrl: posterAsset ? posterAsset.url : '',
         genres: ['Purchased'],

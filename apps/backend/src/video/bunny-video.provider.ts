@@ -24,7 +24,10 @@ export class BunnyVideoProvider implements VideoProvider {
   readonly name = 'bunny';
   private readonly logger = new Logger(BunnyVideoProvider.name);
 
-  getPlaybackSource(file: PlayableFile, opts?: PlaybackOptions): PlaybackSource {
+  getPlaybackSource(
+    file: PlayableFile,
+    opts?: PlaybackOptions,
+  ): PlaybackSource {
     const host = process.env.BUNNY_CDN_HOSTNAME;
     if (!host) {
       this.logger.warn(

@@ -17,7 +17,7 @@ import { VideoModule } from './video/video.module';
 
 @Module({
   imports: [
-    AuthModule, 
+    AuthModule,
     PrismaModule,
     MoviesModule,
     PurchasesModule,
@@ -28,13 +28,14 @@ import { VideoModule } from './video/video.module';
     WatchHistoryModule,
     PaymentsModule,
     VideoModule,
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 100, // Increase limits for demo dashboard loads
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100, // Increase limits for demo dashboard loads
+      },
+    ]),
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
-
