@@ -1,16 +1,59 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { History, Heart, HeartHandshake, Film, Sparkles, User, Award, Play } from "lucide-react";
-import { mockMovies } from "@/lib/mockData";
+import { History, Heart, HeartHandshake, Film, Sparkles, User, Award, LogOut } from "lucide-react";
+import { mockMovies, Movie } from "@/lib/mockData";
 import { MovieRow } from "@/components/shared/MovieRow";
 import { CinematicButton } from "@/components/ui/CinematicButton";
+import { useAuth } from "@/context/AuthContext";
+import { api, UserProfile, Contribution } from "@/lib/api";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 export default function DashboardPage() {
+  const { user, logout } = useAuth();
+  const [profileStats, setProfileStats] = useState<UserProfile>({
+    name: "John Doe",
+    email: "guest@josephfilms.com",
+    role: "USER",
+    purchasedCount: 2,
+    totalDonations: 150.00
+  });
+  const [purchasedMovies, setPurchasedMovies] = useState<Movie[]>([]);
+  const [contributions, setContributions] = useState<Contribution[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const favorites = mockMovies.filter(m => m.rating === "PG-13" || m.rating === "R").slice(0, 5);
-  const purchased = mockMovies.filter(m => m.year === 2023 || m.isTrending);
   const continueWatching = mockMovies.slice(0, 2);
+
+  useEffect(() => {
+    async function loadDashboardData() {
+      try {
+        const [stats, library, supportHistory] = await Promise.all([
+          api.getProfileStats(),
+          api.getMyLibrary(),
+          api.getMyContributions()
+        ]);
+        if (stats) setProfileStats(stats);
+        if (library) setPurchasedMovies(library);
+        if (supportHistory) setContributions(supportHistory);
+      } catch (err) {
+        console.warn("Could not load dashboard data from API, using default mock presets.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadDashboardData();
+  }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = "/login";
+  };
+
+  const userInitials = profileStats.name
+    ? profileStats.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
+    : "JD";
 
   return (
     <div className="min-h-screen bg-[#030306] pt-32 pb-24 overflow-x-hidden relative">
@@ -36,7 +79,9 @@ export default function DashboardPage() {
           {/* Profile Circle Accent */}
           <div className="relative flex-shrink-0">
             <div className="w-28 h-28 md:w-32 md:h-32 rounded-full bg-gradient-to-tr from-gold-600 via-gold-500 to-gold-300 flex items-center justify-center border-4 border-zinc-950 shadow-[0_0_40px_rgba(212,163,89,0.25)] overflow-hidden">
-              <User className="w-12 h-12 text-zinc-950" />
+              <span className="text-3xl md:text-4xl font-serif font-black text-zinc-950 tracking-tighter">
+                {userInitials}
+              </span>
             </div>
             {/* Patron badge */}
             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gold-500 border border-gold-400 text-[9px] uppercase tracking-widest font-black text-zinc-950 flex items-center gap-1 shadow-lg">
@@ -50,10 +95,26 @@ export default function DashboardPage() {
               <Sparkles className="w-3 h-3 text-gold-400" /> Premium Account Space
             </div>
             
-            <h1 className="text-3xl md:text-4xl font-serif tracking-wide font-extrabold text-white mb-2 leading-tight">
-              John Doe
-            </h1>
-            <p className="text-white/40 text-xs md:text-sm font-light mb-6">Patron Member Since October 2024</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-3xl md:text-4xl font-serif tracking-wide font-extrabold text-white mb-2 leading-tight">
+                  {profileStats.name || "Patron Member"}
+                </h1>
+                <p className="text-white/40 text-xs md:text-sm font-light mb-6">
+                  {profileStats.email} • Member since 2024
+                </p>
+              </div>
+
+              <CinematicButton 
+                variant="outline" 
+                size="sm" 
+                onClick={handleLogout}
+                className="gap-2 self-center sm:self-start border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-400/50"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Sign Out
+              </CinematicButton>
+            </div>
             
             {/* Quick stats with gold accent */}
             <div className="flex flex-wrap justify-center md:justify-start gap-4">
@@ -61,7 +122,7 @@ export default function DashboardPage() {
                 <Film className="w-4 h-4 text-gold-400" />
                 <div className="text-left">
                   <p className="text-[9px] font-bold uppercase tracking-wider text-white/40">Purchased Titles</p>
-                  <p className="text-lg font-bold text-white">12 Movies</p>
+                  <p className="text-lg font-bold text-white">{profileStats.purchasedCount} Movies</p>
                 </div>
               </div>
               
@@ -69,7 +130,7 @@ export default function DashboardPage() {
                 <HeartHandshake className="w-4 h-4 text-gold-400" />
                 <div className="text-left">
                   <p className="text-[9px] font-bold uppercase tracking-wider text-white/40">Ministry Support</p>
-                  <p className="text-lg font-bold text-white">$450 donated</p>
+                  <p className="text-lg font-bold text-white">${profileStats.totalDonations.toFixed(2)} donated</p>
                 </div>
               </div>
             </div>
@@ -104,7 +165,7 @@ export default function DashboardPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent" />
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
                       <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 group-hover:scale-110 transition-transform">
-                        <Play className="w-6 h-6 text-white fill-white ml-0.5" />
+                        <History className="w-6 h-6 text-white ml-0.5" />
                       </div>
                     </div>
                     <div className="absolute bottom-4 left-6 right-6">
@@ -125,7 +186,10 @@ export default function DashboardPage() {
 
           {/* Purchased Content Rows */}
           <section className="-mx-4 md:-mx-8">
-            <MovieRow title="My Purchased Presentations" movies={purchased} />
+            <MovieRow 
+              title="My Purchased Presentations" 
+              movies={purchasedMovies.length > 0 ? purchasedMovies : mockMovies.filter(m => m.year === 2023)} 
+            />
           </section>
 
           {/* Wishlist / My List Grid */}
@@ -182,18 +246,14 @@ export default function DashboardPage() {
                   <p className="text-xs text-white/40 font-light mt-0.5">Your support history directly impacts Christian filmmaking ministries.</p>
                 </div>
                 <div className="mt-4 md:mt-0 text-[10px] font-bold uppercase tracking-wider text-gold-400 px-3 py-1 rounded bg-gold-500/10 border border-gold-500/20">
-                  Total Donated: $450.00
+                  Total Donated: ${profileStats.totalDonations.toFixed(2)}
                 </div>
               </div>
 
               <div className="space-y-4">
-                {[
-                  { org: "Angel Studios", campaign: "Sound of Freedom Distribution", amount: "$50.00", date: "Oct 12, 2024", invoice: "#INV-92831" },
-                  { org: "The Chosen Season 5", campaign: "Production Support Campaign", amount: "$100.00", date: "Sep 28, 2024", invoice: "#INV-84192" },
-                  { org: "Jesus Revolution Creators", campaign: "Uplifting Stories Outreach", amount: "$25.00", date: "Aug 15, 2024", invoice: "#INV-72810" },
-                ].map((donation, i) => (
+                {contributions.map((donation, i) => (
                   <div 
-                    key={i} 
+                    key={donation.id || i} 
                     className="flex flex-col sm:flex-row justify-between sm:items-center py-4 border-b border-white/5 last:border-0 last:pb-0"
                   >
                     <div>

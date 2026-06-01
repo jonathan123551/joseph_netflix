@@ -5,15 +5,32 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { CinematicButton } from "@/components/ui/CinematicButton";
 import { featuredMovie } from "@/lib/mockData";
-import { Film, ShieldCheck } from "lucide-react";
+import { Film, ShieldCheck, AlertCircle } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    window.location.href = "/dashboard"; // Mock redirect
+    setError("");
+    setIsSubmitting(true);
+    try {
+      const success = await login(email, password);
+      if (success) {
+        window.location.href = "/dashboard"; // Direct redirect to clear session state fully
+      } else {
+        setError("Invalid email or password. Use your email to access the guest demo.");
+      }
+    } catch (err) {
+      setError("Authentication service is unavailable. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -62,6 +79,17 @@ export default function LoginPage() {
               Access your digital library, purchases, and watchlists securely.
             </p>
           </div>
+
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/25 flex items-start gap-3 text-xs text-red-300"
+            >
+              <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <span>{error}</span>
+            </motion.div>
+          )}
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -103,9 +131,10 @@ export default function LoginPage() {
               type="submit" 
               variant="gold"
               size="lg" 
+              disabled={isSubmitting}
               className="w-full font-bold text-sm uppercase tracking-widest mt-2 h-13 rounded-xl"
             >
-              Sign In
+              {isSubmitting ? "Signing In..." : "Sign In"}
             </CinematicButton>
           </form>
 

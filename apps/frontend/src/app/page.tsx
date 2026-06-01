@@ -2,14 +2,31 @@
 
 import { motion } from "framer-motion";
 import { Play, Info, Sparkles, Volume2, VolumeX } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CinematicButton } from "@/components/ui/CinematicButton";
 import { MovieRow } from "@/components/shared/MovieRow";
-import { categories, featuredMovie } from "@/lib/mockData";
+import { categories, featuredMovie, Movie } from "@/lib/mockData";
+import { api } from "@/lib/api";
 import Link from "next/link";
 
 export default function HomePage() {
   const [isMuted, setIsMuted] = useState(true);
+  const [featured, setFeatured] = useState<Movie>(featuredMovie);
+  const [rows, setRows] = useState<any[]>(categories);
+
+  useEffect(() => {
+    async function fetchHomeData() {
+      try {
+        const feat = await api.getFeaturedMovie();
+        const movieRows = await api.getMovieCategories();
+        if (feat) setFeatured(feat);
+        if (movieRows && movieRows.length > 0) setRows(movieRows);
+      } catch (err) {
+        console.warn("Could not load homepage data from API, using static presets.");
+      }
+    }
+    fetchHomeData();
+  }, []);
 
   return (
     <div className="relative min-h-screen bg-[#030306] pb-24 overflow-x-hidden">
@@ -25,8 +42,8 @@ export default function HomePage() {
         {/* Hero Media Background Layer */}
         <div className="absolute inset-0 z-0">
           <img
-            src={featuredMovie.bannerUrl}
-            alt={featuredMovie.title}
+            src={featured.bannerUrl}
+            alt={featured.title}
             className="w-full h-full object-cover scale-105 pointer-events-none"
           />
           {/* Intense vignette and blending gradients */}
@@ -56,7 +73,7 @@ export default function HomePage() {
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
             >
               <h1 className="font-serif tracking-wide text-5xl sm:text-7xl lg:text-[5.5rem] font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white via-zinc-100 to-zinc-400 mb-4 leading-[1.05] drop-shadow-[0_15px_30px_rgba(0,0,0,0.85)]">
-                {featuredMovie.title}
+                {featured.title}
               </h1>
             </motion.div>
             
@@ -67,15 +84,15 @@ export default function HomePage() {
               transition={{ duration: 0.8, delay: 0.3 }}
               className="flex flex-wrap items-center gap-4 text-xs md:text-sm text-white/70 mb-6 font-medium"
             >
-              <span className="text-gold-400 font-bold tracking-widest text-shadow-gold">98% RECOMMENDED</span>
+              <span className="text-gold-400 font-bold tracking-wider text-shadow-gold">98% RECOMMENDED</span>
               <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
-              <span>{featuredMovie.year}</span>
+              <span>{featured.year}</span>
               <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
               <span className="border border-white/10 px-2 py-0.5 rounded-md bg-white/5 font-semibold">
-                {featuredMovie.rating}
+                {featured.rating}
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
-              <span>{featuredMovie.duration}</span>
+              <span>{featured.duration}</span>
               <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
               <span className="border border-gold-500/20 px-2 py-0.5 rounded-md bg-gold-500/5 text-[9px] uppercase tracking-widest font-bold text-gold-400">Ultra 4K</span>
             </motion.div>
@@ -87,7 +104,7 @@ export default function HomePage() {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="text-base sm:text-lg text-white/60 drop-shadow-md mb-8 line-clamp-3 md:line-clamp-4 font-light leading-relaxed max-w-2xl"
             >
-              {featuredMovie.description}
+              {featured.description}
             </motion.p>
 
             {/* Actions */}
@@ -97,13 +114,13 @@ export default function HomePage() {
               transition={{ duration: 0.8, delay: 0.5 }}
               className="flex flex-wrap items-center gap-4"
             >
-              <Link href={`/movie/${featuredMovie.id}`}>
+              <Link href={`/movie/${featured.id}`}>
                 <CinematicButton variant="gold" size="lg" className="gap-3">
                   <Play className="w-5 h-5 fill-zinc-950 text-zinc-950" />
                   Watch Trailer
                 </CinematicButton>
               </Link>
-              <Link href={`/movie/${featuredMovie.id}`}>
+              <Link href={`/movie/${featured.id}`}>
                 <CinematicButton variant="glass" size="lg" className="gap-3">
                   <Info className="w-5 h-5" />
                   Details & Offers
@@ -129,7 +146,7 @@ export default function HomePage() {
         {/* Ambient Row Light Reflection */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[90%] h-[300px] radial-glow-gold rounded-full filter blur-[150px] opacity-10 mix-blend-screen pointer-events-none" />
         
-        {categories.map((category) => (
+        {rows.map((category) => (
           <MovieRow 
             key={category.id} 
             title={category.title} 

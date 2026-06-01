@@ -1,29 +1,86 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Play, Heart, ShoppingBag, Tv, Share2, Check, Sparkles } from "lucide-react";
 import { CinematicButton } from "@/components/ui/CinematicButton";
-import { mockMovies } from "@/lib/mockData";
+import { mockMovies, Movie } from "@/lib/mockData";
 import { MovieRow } from "@/components/shared/MovieRow";
+import { api } from "@/lib/api";
 
 export default function MovieDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const movie = mockMovies.find(m => m.id === resolvedParams.id) || mockMovies[0];
-  const similarMovies = mockMovies.filter(m => m.id !== movie.id).slice(0, 5);
+  const movieId = resolvedParams.id;
 
+  const [movie, setMovie] = useState<Movie | null>(null);
+  const [similarMovies, setSimilarMovies] = useState<Movie[]>([]);
   const [donationAmount, setDonationAmount] = useState<number | null>(null);
   const [customDonation, setCustomDonation] = useState("");
   const [checkoutStep, setCheckoutStep] = useState<"idle" | "donated" | "purchased" | "rented">("idle");
   const [isPlayingTrailer, setIsPlayingTrailer] = useState(false);
 
-  const handleAction = (type: "purchased" | "rented" | "donated") => {
-    setCheckoutStep(type);
-    setTimeout(() => {
-      setCheckoutStep("idle");
-    }, 4000);
+  // Fetch movie data from backend
+  useEffect(() => {
+    async function loadMovieData() {
+      try {
+        const details = await api.getMovieDetails(movieId);
+        if (details) {
+          setMovie(details);
+          const similar = mockMovies.filter(m => m.id !== details.id).slice(0, 5);
+          setSimilarMovies(similar);
+        }
+      } catch (err) {
+        console.warn("Could not retrieve movie details from API. Using defaults.");
+        const fallbackMovie = mockMovies.find(m => m.id === movieId) || mockMovies[0];
+        setMovie(fallbackMovie);
+        setSimilarMovies(mockMovies.filter(m => m.id !== fallbackMovie.id).slice(0, 5));
+      }
+    }
+    loadMovieData();
+  }, [movieId]);
+
+  const handleBuy = async () => {
+    if (!movie) return;
+    try {
+      await api.buyMovie(movie.id);
+      setCheckoutStep("purchased");
+      setTimeout(() => setCheckoutStep("idle"), 4000);
+    } catch (err) {
+      console.error(err);
+    }
   };
+
+  const handleRent = async () => {
+    if (!movie) return;
+    try {
+      await api.rentMovie(movie.id);
+      setCheckoutStep("rented");
+      setTimeout(() => setCheckoutStep("idle"), 4000);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDonate = async () => {
+    const amt = donationAmount || Number(customDonation);
+    if (!amt || isNaN(amt)) return;
+    try {
+      await api.submitDonation(amt);
+      setCheckoutStep("donated");
+      setTimeout(() => setCheckoutStep("idle"), 4000);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (!movie) {
+    return (
+      <div className="min-h-screen bg-[#030306] flex items-center justify-center">
+        <div className="text-white/40 font-serif tracking-widest text-lg uppercase animate-pulse">Loading presentation...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#030306] pb-24 overflow-x-hidden relative">
@@ -218,7 +275,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                   <CinematicButton 
                     variant="gold"
                     size="sm" 
-                    onClick={() => handleAction("purchased")}
+                    onClick={handleBuy}
                     className="gap-2.5"
                   >
                     <ShoppingBag className="w-3.5 h-3.5" />
@@ -235,7 +292,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                   <CinematicButton 
                     variant="glass" 
                     size="sm" 
-                    onClick={() => handleAction("rented")}
+                    onClick={handleRent}
                     className="gap-2 bg-white/8 border-white/10 text-white"
                   >
                     <Tv className="w-3.5 h-3.5 text-gold-400" />
@@ -289,11 +346,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                   <CinematicButton
                     variant="outline"
                     size="default"
-                    onClick={() => {
-                      if (donationAmount || customDonation) {
-                        handleAction("donated");
-                      }
-                    }}
+                    onClick={handleDonate}
                     disabled={!donationAmount && !customDonation}
                     className="w-full border-gold-500/30 text-gold-400 hover:bg-gold-500/10 hover:border-gold-400/60 uppercase tracking-widest text-[10px] font-bold py-3.5 h-auto rounded-xl flex items-center justify-center gap-2"
                   >

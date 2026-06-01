@@ -1,15 +1,37 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { CinematicButton } from "@/components/ui/CinematicButton";
 import { featuredMovie } from "@/lib/mockData";
-import { CheckCircle2, Film, ShieldCheck, HelpCircle } from "lucide-react";
+import { CheckCircle2, Film, ShieldCheck, HelpCircle, AlertCircle } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function RegisterPage() {
-  const handleSubmit = (e: React.FormEvent) => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { register } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    window.location.href = "/dashboard"; // Mock redirect
+    setError("");
+    setIsSubmitting(true);
+    try {
+      const success = await register(name, email, password);
+      if (success) {
+        window.location.href = "/dashboard"; // Clear session fully on reload
+      } else {
+        setError("Could not register. Use your email to access the guest demo.");
+      }
+    } catch (err) {
+      setError("Registration service is unavailable. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -87,11 +109,24 @@ export default function RegisterPage() {
 
         {/* Right Side: Registration Form */}
         <div className="w-full md:w-1/2 p-8 md:p-14 flex flex-col justify-center bg-black/20">
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/25 flex items-start gap-3 text-xs text-red-300"
+            >
+              <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <span>{error}</span>
+            </motion.div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 ml-1">Full Name</label>
               <input 
                 type="text" 
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-gold-500/50 focus:border-gold-400/40 focus:bg-white/8 transition-all duration-300"
                 placeholder="John Doe"
                 required
@@ -102,6 +137,8 @@ export default function RegisterPage() {
               <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 ml-1">Email Address</label>
               <input 
                 type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-gold-500/50 focus:border-gold-400/40 focus:bg-white/8 transition-all duration-300"
                 placeholder="john@example.com"
                 required
@@ -112,6 +149,8 @@ export default function RegisterPage() {
               <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 ml-1">Password</label>
               <input 
                 type="password" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-gold-500/50 focus:border-gold-400/40 focus:bg-white/8 transition-all duration-300"
                 placeholder="Create a strong password"
                 required
@@ -126,9 +165,10 @@ export default function RegisterPage() {
               type="submit" 
               variant="gold"
               size="lg" 
+              disabled={isSubmitting}
               className="w-full font-bold text-sm uppercase tracking-widest mt-4 h-13 rounded-xl"
             >
-              Create Account
+              {isSubmitting ? "Creating Account..." : "Create Account"}
             </CinematicButton>
           </form>
 
