@@ -1,75 +1,97 @@
-'use client';
+"use client";
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useRouter } from 'next/navigation';
-
-const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
+import { useState } from "react";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { CinematicButton } from "@/components/ui/CinematicButton";
+import { featuredMovie } from "@/lib/mockData";
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const form = useForm<z.infer<typeof registerSchema>>({
-    resolver: zodResolver(registerSchema as any),
-    defaultValues: { name: '', email: '', password: '' },
-  });
+  const [step, setStep] = useState(1);
 
-  const onSubmit = async (values: z.infer<typeof registerSchema>) => {
-    // Calling backend API
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-1871f.up.railway.app';
-    const res = await fetch(`${apiUrl}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(values),
-      credentials: 'include',
-    });
-    
-    if (res.ok) {
-      router.push('/dashboard');
-    } else {
-      alert('Registration failed. Email might already exist.');
-    }
+  const handleNext = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (step === 1) setStep(2);
+    else window.location.href = "/dashboard"; // Mock redirect
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-zinc-950">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-zinc-900 rounded-xl shadow-md">
-        <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white">Create an Account</h1>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
-            <input 
-              {...form.register('name')} 
-              className="w-full px-3 py-2 mt-1 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" 
-            />
-            {form.formState.errors.name && <p className="text-red-500 text-xs mt-1">{form.formState.errors.name.message}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-            <input 
-              {...form.register('email')} 
-              className="w-full px-3 py-2 mt-1 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" 
-            />
-            {form.formState.errors.email && <p className="text-red-500 text-xs mt-1">{form.formState.errors.email.message}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
-            <input 
-              type="password"
-              {...form.register('password')} 
-              className="w-full px-3 py-2 mt-1 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 dark:text-white" 
-            />
-            {form.formState.errors.password && <p className="text-red-500 text-xs mt-1">{form.formState.errors.password.message}</p>}
-          </div>
-          <button type="submit" className="w-full px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-md">
-            Sign Up
-          </button>
-        </form>
+    <div className="relative min-h-screen flex items-center justify-center p-4">
+      {/* Background */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src={featuredMovie.bannerUrl} 
+          alt="Background" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-md" />
       </div>
+
+      {/* Form Card */}
+      <motion.div 
+        key={step}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="relative z-10 w-full max-w-md"
+      >
+        <div className="bg-zinc-950/70 backdrop-blur-xl border border-white/10 rounded-2xl p-8 md:p-10 shadow-2xl">
+          <div className="mb-8">
+            <p className="text-white/50 text-sm font-medium uppercase tracking-widest mb-2">Step {step} of 2</p>
+            <h1 className="text-3xl font-bold text-white tracking-tight">
+              {step === 1 ? "Create a password to start your membership" : "Choose your plan"}
+            </h1>
+            {step === 1 && <p className="text-white/70 mt-3">Just a few more steps and you're done! We hate paperwork, too.</p>}
+          </div>
+          
+          <form onSubmit={handleNext} className="space-y-5">
+            {step === 1 ? (
+              <>
+                <div className="space-y-2">
+                  <input 
+                    type="email" 
+                    className="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-4 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
+                    placeholder="Email address"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <input 
+                    type="password" 
+                    className="w-full bg-zinc-900/50 border border-white/10 rounded-lg px-4 py-4 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
+                    placeholder="Add a password"
+                    required
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="space-y-4">
+                <div className="border-2 border-white/20 rounded-xl p-4 cursor-pointer hover:border-white/50 transition-colors bg-white/5">
+                  <h3 className="text-white font-bold text-lg">Premium</h3>
+                  <p className="text-white/60 text-sm mt-1">4K + HDR, 4 devices</p>
+                  <p className="text-white font-semibold mt-3">$19.99 / month</p>
+                </div>
+                <div className="border border-white/10 rounded-xl p-4 cursor-pointer hover:border-white/30 transition-colors">
+                  <h3 className="text-white font-bold text-lg">Standard</h3>
+                  <p className="text-white/60 text-sm mt-1">1080p, 2 devices</p>
+                  <p className="text-white font-semibold mt-3">$14.99 / month</p>
+                </div>
+              </div>
+            )}
+
+            <CinematicButton type="submit" size="lg" className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-lg mt-6 h-14">
+              {step === 1 ? "Next" : "Start Membership"}
+            </CinematicButton>
+          </form>
+
+          <div className="mt-8 text-center text-white/50 text-sm border-t border-white/10 pt-6">
+            Already have an account?{" "}
+            <Link href="/login" className="text-white hover:underline font-medium ml-1">
+              Sign In.
+            </Link>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }
