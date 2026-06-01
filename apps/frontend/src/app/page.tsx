@@ -1,80 +1,134 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Play, Info } from "lucide-react";
+import { Play, Info, Sparkles, Volume2, VolumeX } from "lucide-react";
+import { useState } from "react";
 import { CinematicButton } from "@/components/ui/CinematicButton";
 import { MovieRow } from "@/components/shared/MovieRow";
 import { categories, featuredMovie } from "@/lib/mockData";
 import Link from "next/link";
 
 export default function HomePage() {
+  const [isMuted, setIsMuted] = useState(true);
+
   return (
-    <div className="relative min-h-screen bg-zinc-950 pb-24 overflow-x-hidden">
+    <div className="relative min-h-screen bg-[#030306] pb-24 overflow-x-hidden">
+      {/* Film Grain Texture overlay */}
+      <div className="grain-overlay" />
+
       {/* Massive Cinematic Hero Section */}
-      <section className="relative h-[90vh] md:h-[100vh] w-full flex items-center">
-        {/* Background Layer */}
+      <section className="relative h-[95vh] w-full flex items-center overflow-hidden">
+        {/* Cinematic Spotlight Backdrop Bloom */}
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] radial-glow-gold rounded-full filter blur-[120px] opacity-40 mix-blend-screen pointer-events-none animate-pulse-slow" />
+        <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] radial-glow-blue rounded-full filter blur-[100px] opacity-20 mix-blend-screen pointer-events-none" />
+
+        {/* Hero Media Background Layer */}
         <div className="absolute inset-0 z-0">
           <img
             src={featuredMovie.bannerUrl}
             alt={featuredMovie.title}
-            className="w-full h-full object-cover scale-105"
+            className="w-full h-full object-cover scale-105 pointer-events-none"
           />
           {/* Intense vignette and blending gradients */}
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/90 via-zinc-950/40 to-transparent" />
-          <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
+          <div className="absolute inset-0 bg-gradient-hero-overlay" />
+          <div className="absolute inset-0 bg-gradient-hero-left" />
+          <div className="absolute inset-0 bg-gradient-vignette" />
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-10 px-4 md:px-16 w-full max-w-6xl mt-20 md:mt-32">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="max-w-2xl"
-          >
-            {/* Soft glow behind text */}
-            <div className="relative">
-              <div className="absolute -inset-8 bg-primary/20 blur-[80px] rounded-full opacity-50" />
-              <h1 className="relative text-5xl md:text-7xl lg:text-[6rem] font-bold text-white mb-6 tracking-tighter leading-[1.1] drop-shadow-2xl">
+        <div className="relative z-10 px-4 sm:px-8 md:px-16 w-full max-w-7xl mx-auto mt-24">
+          <div className="max-w-3xl">
+            {/* Elegant Micro-pill Tag */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.1 }}
+              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gold-500/10 border border-gold-500/25 text-[10px] font-bold uppercase tracking-[0.2em] text-gold-300 mb-6 shadow-[0_0_20px_rgba(212,163,89,0.1)]"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-gold-400" />
+              Featured Presentation
+            </motion.div>
+
+            {/* Immersive Cinematic Typography */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+            >
+              <h1 className="font-serif tracking-wide text-5xl sm:text-7xl lg:text-[5.5rem] font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white via-zinc-100 to-zinc-400 mb-4 leading-[1.05] drop-shadow-[0_15px_30px_rgba(0,0,0,0.85)]">
                 {featuredMovie.title}
               </h1>
-            </div>
+            </motion.div>
             
-            <div className="flex items-center gap-4 text-sm md:text-base text-white/80 mb-6 font-medium">
-              <span className="text-green-500 font-semibold drop-shadow-md">98% Match</span>
-              <span className="drop-shadow-md">{featuredMovie.year}</span>
-              <span className="border border-white/30 px-2 py-0.5 rounded text-white/90 shadow-sm">
+            {/* Metadata Badges */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="flex flex-wrap items-center gap-4 text-xs md:text-sm text-white/70 mb-6 font-medium"
+            >
+              <span className="text-gold-400 font-bold tracking-widest text-shadow-gold">98% RECOMMENDED</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
+              <span>{featuredMovie.year}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
+              <span className="border border-white/10 px-2 py-0.5 rounded-md bg-white/5 font-semibold">
                 {featuredMovie.rating}
               </span>
-              <span className="drop-shadow-md">{featuredMovie.duration}</span>
-              <span className="border border-white/20 px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider font-bold shadow-sm">HD</span>
-            </div>
+              <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
+              <span>{featuredMovie.duration}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
+              <span className="border border-gold-500/20 px-2 py-0.5 rounded-md bg-gold-500/5 text-[9px] uppercase tracking-widest font-bold text-gold-400">Ultra 4K</span>
+            </motion.div>
 
-            <p className="text-lg md:text-xl text-white/80 drop-shadow-lg mb-10 line-clamp-3 md:line-clamp-4 font-light leading-relaxed max-w-xl">
+            {/* Description */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="text-base sm:text-lg text-white/60 drop-shadow-md mb-8 line-clamp-3 md:line-clamp-4 font-light leading-relaxed max-w-2xl"
+            >
               {featuredMovie.description}
-            </p>
+            </motion.p>
 
-            <div className="flex items-center gap-4">
-              <Link href={`/watch/${featuredMovie.id}`}>
-                <CinematicButton size="lg" className="gap-3 px-8 md:px-10 h-14 md:h-16 text-lg rounded-xl shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:scale-105 transition-all">
-                  <Play className="w-6 h-6 md:w-7 md:h-7 fill-black" />
-                  Watch Now
+            {/* Actions */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className="flex flex-wrap items-center gap-4"
+            >
+              <Link href={`/movie/${featuredMovie.id}`}>
+                <CinematicButton variant="gold" size="lg" className="gap-3">
+                  <Play className="w-5 h-5 fill-zinc-950 text-zinc-950" />
+                  Watch Trailer
                 </CinematicButton>
               </Link>
               <Link href={`/movie/${featuredMovie.id}`}>
-                <CinematicButton variant="glass" size="lg" className="gap-3 px-8 md:px-10 h-14 md:h-16 text-lg rounded-xl hover:scale-105 transition-all bg-white/10 border-white/20">
-                  <Info className="w-6 h-6 md:w-7 md:h-7" />
-                  More Info
+                <CinematicButton variant="glass" size="lg" className="gap-3">
+                  <Info className="w-5 h-5" />
+                  Details & Offers
                 </CinematicButton>
               </Link>
-            </div>
-          </motion.div>
+              
+              {/* Audio controller */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsMuted(!isMuted)}
+                className="w-11 h-11 rounded-full border border-white/10 bg-black/30 backdrop-blur-md flex items-center justify-center text-white/70 hover:text-white cursor-pointer hover:border-white/20 transition-all shadow-md ml-auto sm:ml-4"
+              >
+                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </motion.button>
+            </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Content Rows */}
-      <section className="relative z-20 -mt-32 space-y-12 md:space-y-16">
+      <section className="relative z-20 -mt-20 sm:-mt-24 space-y-16 max-w-7xl mx-auto px-0 md:px-4">
+        {/* Ambient Row Light Reflection */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[90%] h-[300px] radial-glow-gold rounded-full filter blur-[150px] opacity-10 mix-blend-screen pointer-events-none" />
+        
         {categories.map((category) => (
           <MovieRow 
             key={category.id} 

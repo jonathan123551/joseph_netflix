@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Play, Plus, ThumbsUp, ChevronDown } from "lucide-react";
+import { useState, useRef } from "react";
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
+import { Play, Plus, ThumbsUp, ChevronDown, Check } from "lucide-react";
 import Link from "next/link";
 import { Movie } from "@/lib/mockData";
 
@@ -12,101 +12,168 @@ interface MovieCardProps {
 
 export function MovieCard({ movie }: MovieCardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  let hoverTimeout: NodeJS.Timeout;
+  const [isAdded, setIsAdded] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  
+  // Motion values for the 3D tilt effect
+  const x = useMotionValue(200);
+  const y = useMotionValue(100);
+  
+  // Transform values for tilt angles (rotates up to 10 degrees)
+  const rotateX = useTransform(y, [0, 200], [10, -10]);
+  const rotateY = useTransform(x, [0, 400], [-10, 10]);
+  
+  // Reflection highlights
+  const glareX = useTransform(x, [0, 400], ["0%", "100%"]);
+  const glareY = useTransform(y, [0, 200], ["0%", "100%"]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    x.set(mouseX);
+    y.set(mouseY);
+  };
 
   const handleMouseEnter = () => {
-    hoverTimeout = setTimeout(() => setIsHovered(true), 400); // 400ms delay to prevent accidental hovers while scrolling
+    setIsHovered(true);
   };
 
   const handleMouseLeave = () => {
-    clearTimeout(hoverTimeout);
     setIsHovered(false);
+    // Reset tilt
+    x.set(200);
+    y.set(100);
   };
 
   return (
-    <div 
-      className="relative w-full aspect-[16/9] rounded-xl z-0"
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      className="relative w-full aspect-[16/9] cursor-pointer perspective-1000 z-10"
     >
-      <img
-        src={movie.bannerUrl}
-        alt={movie.title}
-        className="w-full h-full object-cover rounded-xl"
-        loading="lazy"
-      />
+      <motion.div
+        style={{
+          rotateX: isHovered ? rotateX : 0,
+          rotateY: isHovered ? rotateY : 0,
+          transformStyle: "preserve-3d",
+        }}
+        animate={{
+          scale: isHovered ? 1.05 : 1,
+          z: isHovered ? 40 : 0,
+        }}
+        transition={{ type: "spring", stiffness: 350, damping: 25 }}
+        className={`relative w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-shadow duration-300 ${
+          isHovered ? "shadow-[0_20px_50px_rgba(0,0,0,0.8),_0_0_30px_rgba(212,163,89,0.15)] border-white/10" : "border-white/5"
+        } border bg-zinc-950`}
+      >
+        {/* Poster Image */}
+        <img
+          src={movie.bannerUrl}
+          alt={movie.title}
+          className="w-full h-full object-cover select-none transition-transform duration-700 ease-out"
+          style={{
+            transform: isHovered ? "scale(1.08)" : "scale(1)",
+          }}
+          loading="lazy"
+        />
 
-      <AnimatePresence>
-        {isHovered && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1.3 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] rounded-xl bg-zinc-950 shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-[100] border border-white/20 overflow-hidden"
-          >
-            {/* Expanded Hover Card Image */}
-            <div className="relative aspect-[16/9] w-full">
-              <img
-                src={movie.bannerUrl}
-                alt={movie.title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
-              
-              {/* Optional embedded title treatment */}
-              <div className="absolute bottom-4 left-4 right-4">
-                <h3 className="text-white font-bold text-lg leading-tight line-clamp-1 drop-shadow-md">
-                  {movie.title}
-                </h3>
-              </div>
-            </div>
+        {/* Ambient Dark Gradient Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent pointer-events-none" />
+        
+        {/* Dynamic Interactive Light Glare Effect */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none opacity-0 select-none bg-[radial-gradient(circle_at_var(--glare-x)_var(--glare-y),rgba(255,255,255,0.15)_0%,transparent_50%)]"
+          style={{
+            opacity: isHovered ? 1 : 0,
+            // CSS custom variables hooked into motion transforms
+            "--glare-x": glareX,
+            "--glare-y": glareY,
+          } as any}
+          transition={{ duration: 0.2 }}
+        />
 
-            {/* Expanded Hover Card Details */}
-            <div className="p-4 space-y-3 bg-zinc-950">
-              <div className="flex items-center gap-2">
-                <Link href={`/watch/${movie.id}`}>
-                  <button className="w-8 h-8 rounded-full bg-white flex items-center justify-center hover:bg-white/80 transition-colors">
-                    <Play className="w-4 h-4 text-black fill-black ml-0.5" />
-                  </button>
-                </Link>
-                <button className="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center hover:border-white transition-colors group">
-                  <Plus className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
-                </button>
-                <button className="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center hover:border-white transition-colors group">
-                  <ThumbsUp className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
-                </button>
-                
-                <div className="flex-1" />
+        {/* Cinematic Title & Meta overlay (Visible always at bottom, cleaner design) */}
+        <div className={`absolute bottom-0 left-0 right-0 p-4 transition-all duration-300 ${
+          isHovered ? "bg-zinc-950/90 backdrop-blur-md translate-y-0" : "bg-gradient-to-t from-zinc-950 to-transparent"
+        }`}>
+          <h3 className="text-white font-serif tracking-wide text-sm md:text-base font-bold line-clamp-1 text-glow">
+            {movie.title}
+          </h3>
+          
+          <div className="flex items-center gap-2 mt-1.5 text-[10px] font-medium text-white/70">
+            <span className="text-gold-400 font-semibold">{movie.year}</span>
+            <span className="w-1 h-1 rounded-full bg-white/20" />
+            <span className="border border-white/20 px-1 py-0.2 rounded-[3px] text-[9px] scale-90 origin-left text-white/90">
+              {movie.rating}
+            </span>
+            <span className="w-1 h-1 rounded-full bg-white/20" />
+            <span>{movie.duration}</span>
+          </div>
+
+          {/* Interactive options expanded on hover */}
+          <AnimatePresence>
+            {isHovered && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="mt-3.5 pt-3 border-t border-white/5 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <Link href={`/movie/${movie.id}`} className="flex-shrink-0">
+                    <motion.button 
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="w-7 h-7 rounded-full bg-white flex items-center justify-center hover:bg-gold-300 transition-colors shadow-lg cursor-pointer"
+                    >
+                      <Play className="w-3.5 h-3.5 text-zinc-950 fill-zinc-950 ml-0.5" />
+                    </motion.button>
+                  </Link>
+                  <motion.button 
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsAdded(!isAdded);
+                    }}
+                    className="w-7 h-7 rounded-full border border-white/20 bg-white/5 flex items-center justify-center hover:border-white transition-colors cursor-pointer"
+                  >
+                    {isAdded ? (
+                      <Check className="w-3.5 h-3.5 text-gold-400" />
+                    ) : (
+                      <Plus className="w-3.5 h-3.5 text-white/80" />
+                    )}
+                  </motion.button>
+                  <motion.button 
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="w-7 h-7 rounded-full border border-white/20 bg-white/5 flex items-center justify-center hover:border-white transition-colors cursor-pointer"
+                  >
+                    <ThumbsUp className="w-3 h-3 text-white/80" />
+                  </motion.button>
+                </div>
                 
                 <Link href={`/movie/${movie.id}`}>
-                  <button className="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center hover:border-white transition-colors group">
-                    <ChevronDown className="w-4 h-4 text-white group-hover:translate-y-0.5 transition-transform" />
-                  </button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    className="flex items-center gap-1 text-[9px] uppercase tracking-widest text-gold-400 hover:text-white font-bold transition-colors cursor-pointer"
+                  >
+                    Details <ChevronDown className="w-3 h-3" />
+                  </motion.button>
                 </Link>
-              </div>
-
-              <div className="flex items-center gap-2 text-xs font-medium text-white/80">
-                <span className="text-green-500 font-semibold drop-shadow-sm">98% Match</span>
-                <span className="border border-white/30 px-1 rounded-sm text-white/90">
-                  {movie.rating}
-                </span>
-                <span>{movie.duration}</span>
-                <span className="border border-white/20 px-1 rounded-sm text-[8px] uppercase tracking-wider">HD</span>
-              </div>
-
-              <div className="flex items-center gap-1.5 text-xs text-white/60 line-clamp-1 font-light">
-                {movie.genres.map((genre, index) => (
-                  <span key={genre} className="flex items-center gap-1.5">
-                    {genre}
-                    {index < movie.genres.length - 1 && <span className="w-1 h-1 rounded-full bg-white/30" />}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
     </div>
   );
 }

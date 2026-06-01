@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { CinematicButton } from "@/components/ui/CinematicButton";
 import { featuredMovie } from "@/lib/mockData";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Film, ShieldCheck, HelpCircle } from "lucide-react";
 
 export default function RegisterPage() {
   const handleSubmit = (e: React.FormEvent) => {
@@ -13,98 +13,133 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-4">
-      {/* Cinematic Background */}
-      <div className="absolute inset-0 z-0">
-        <img 
-          src={featuredMovie.bannerUrl} 
-          alt="Background" 
-          className="w-full h-full object-cover opacity-80"
-        />
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/80" />
-      </div>
+    <div className="relative min-h-screen flex items-center justify-center p-4 bg-[#030306] overflow-hidden">
+      {/* Grain texture overlay */}
+      <div className="grain-overlay" />
 
-      {/* Glassmorphic Form Card */}
+      {/* Volumetric glow backdrop */}
+      <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] radial-glow-gold rounded-full filter blur-[150px] opacity-25 pointer-events-none animate-pulse-slow" />
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] radial-glow-blue rounded-full filter blur-[130px] opacity-15 pointer-events-none" />
+
+      {/* Split-Screen Glassmorphic Form Card */}
       <motion.div 
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative z-10 w-full max-w-[900px] flex flex-col md:flex-row overflow-hidden rounded-3xl border border-white/20 bg-black/40 backdrop-blur-3xl shadow-[0_0_80px_rgba(255,255,255,0.05)]"
+        initial={{ opacity: 0, scale: 0.97, y: 40 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 w-full max-w-[1000px] flex flex-col md:flex-row overflow-hidden rounded-3xl border border-white/10 bg-black/40 backdrop-blur-3xl shadow-cinematic"
       >
-        {/* Value Proposition Sidebar */}
-        <div className="w-full md:w-5/12 bg-white/5 p-8 md:p-12 border-b md:border-b-0 md:border-r border-white/10 flex flex-col justify-center">
-          <h2 className="text-3xl font-bold text-white mb-6 tracking-tight">Create Free Account</h2>
-          <p className="text-white/70 mb-8 font-light leading-relaxed">
-            Join Joseph Netflix today. No subscriptions. No hidden fees. Pay only for what you watch.
-          </p>
-          
-          <ul className="space-y-5 text-white/80">
+        {/* Left Side: Cinematic Presentation & Value Proposition */}
+        <div className="relative w-full md:w-1/2 p-8 md:p-14 flex flex-col justify-between overflow-hidden border-b md:border-b-0 md:border-r border-white/5 min-h-[350px] md:min-h-auto">
+          {/* Background image inside side card */}
+          <div className="absolute inset-0 z-0">
+            <img 
+              src={featuredMovie.bannerUrl} 
+              alt="The Chosen Banner" 
+              className="w-full h-full object-cover opacity-35"
+            />
+            <div className="absolute inset-0 bg-[#030306]/75" />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#030306]/90" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#030306] to-transparent" />
+          </div>
+
+          <div className="relative z-10">
+            <Link href="/" className="flex items-center gap-2 mb-8 group">
+              <Film className="w-5 h-5 text-gold-400 group-hover:rotate-12 transition-transform duration-300" />
+              <span className="font-serif tracking-[0.2em] font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-gold-100 via-gold-400 to-gold-600">
+                JOSEPH
+              </span>
+            </Link>
+
+            <h2 className="text-3xl sm:text-4xl font-serif tracking-wide font-extrabold text-white mb-4 leading-tight drop-shadow-md">
+              Create a Free Account
+            </h2>
+            <p className="text-white/60 text-sm font-light leading-relaxed max-w-sm mb-6">
+              Enter the cinematic gateway for clean, uplifting Christian storytelling. No monthly contracts, subscription fees, or automatic billings.
+            </p>
+          </div>
+
+          <div className="relative z-10 space-y-4">
             {[
-              "Purchase premium Christian movies",
-              "Rent exclusive faith-based content",
-              "Support Christian creators directly",
-              "Donate to partner ministries"
+              "Free Registration (No Credit Card)",
+              "Rent or Purchase Individual Titles",
+              "Directly Support Ministries & Creators",
+              "Access Anywhere (TV, Web, Mobile)"
             ].map((benefit, i) => (
-              <motion.li 
+              <motion.div 
                 key={i}
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -15 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + (i * 0.1) }}
-                className="flex items-center gap-3 font-medium"
+                transition={{ delay: 0.4 + (i * 0.15), duration: 0.8 }}
+                className="flex items-center gap-3"
               >
-                <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
-                <span>{benefit}</span>
-              </motion.li>
+                <div className="w-5 h-5 rounded-full bg-gold-500/10 border border-gold-500/30 flex items-center justify-center flex-shrink-0 shadow-[0_0_10px_rgba(212,163,89,0.05)]">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-gold-400" />
+                </div>
+                <span className="text-xs sm:text-sm font-medium text-white/85">{benefit}</span>
+              </motion.div>
             ))}
-          </ul>
+          </div>
+
+          <div className="relative z-10 mt-8 text-[10px] uppercase tracking-widest text-white/30 font-semibold flex items-center gap-1.5">
+            <HelpCircle className="w-3.5 h-3.5" /> 100% Free Accounts & Library Space
+          </div>
         </div>
 
-        {/* Registration Form */}
-        <div className="w-full md:w-7/12 p-8 md:p-12">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-white/70 ml-1">Full Name</label>
+        {/* Right Side: Registration Form */}
+        <div className="w-full md:w-1/2 p-8 md:p-14 flex flex-col justify-center bg-black/20">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 ml-1">Full Name</label>
               <input 
                 type="text" 
-                className="w-full bg-white/5 border border-white/20 rounded-xl px-5 py-4 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all shadow-inner"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-gold-500/50 focus:border-gold-400/40 focus:bg-white/8 transition-all duration-300"
                 placeholder="John Doe"
                 required
               />
             </div>
             
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-white/70 ml-1">Email Address</label>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 ml-1">Email Address</label>
               <input 
                 type="email" 
-                className="w-full bg-white/5 border border-white/20 rounded-xl px-5 py-4 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all shadow-inner"
-                placeholder="you@example.com"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-gold-500/50 focus:border-gold-400/40 focus:bg-white/8 transition-all duration-300"
+                placeholder="john@example.com"
                 required
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-white/70 ml-1">Password</label>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 ml-1">Password</label>
               <input 
                 type="password" 
-                className="w-full bg-white/5 border border-white/20 rounded-xl px-5 py-4 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all shadow-inner"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-gold-500/50 focus:border-gold-400/40 focus:bg-white/8 transition-all duration-300"
                 placeholder="Create a strong password"
                 required
               />
             </div>
 
+            <div className="text-[10px] text-white/40 leading-relaxed pt-1 px-1">
+              By joining, you agree to our terms. This is a transactional-only streaming marketplace. Subscriptions are not supported.
+            </div>
+
             <CinematicButton 
               type="submit" 
+              variant="gold"
               size="lg" 
-              className="w-full bg-gradient-to-r from-primary/90 to-primary text-primary-foreground hover:from-primary hover:to-primary/90 font-bold text-lg mt-8 h-14 shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] transition-all rounded-xl"
+              className="w-full font-bold text-sm uppercase tracking-widest mt-4 h-13 rounded-xl"
             >
-              Start Watching Now
+              Create Account
             </CinematicButton>
           </form>
 
-          <div className="mt-8 text-center text-white/50 text-sm">
+          {/* Secure lock disclaimer */}
+          <div className="mt-5 flex items-center justify-center gap-1.5 text-[9px] uppercase tracking-wider text-white/20 font-bold">
+            <ShieldCheck className="w-3.5 h-3.5 text-gold-500/40" /> 256-bit encryption layer
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-white/5 text-center text-white/40 text-xs font-medium">
             Already have an account?{" "}
-            <Link href="/login" className="text-white hover:text-primary transition-colors font-semibold ml-1">
+            <Link href="/login" className="text-gold-400 hover:text-gold-300 hover:underline ml-1">
               Sign In
             </Link>
           </div>

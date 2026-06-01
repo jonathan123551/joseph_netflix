@@ -1,93 +1,121 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Settings, Heart, History, Play, HeartHandshake, Film } from "lucide-react";
+import { History, Heart, HeartHandshake, Film, Sparkles, User, Award, Play } from "lucide-react";
 import { mockMovies } from "@/lib/mockData";
 import { MovieRow } from "@/components/shared/MovieRow";
+import { CinematicButton } from "@/components/ui/CinematicButton";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const favorites = mockMovies.filter(m => m.rating === "PG-13" || m.rating === "R").slice(0, 5);
-  const purchased = mockMovies.filter(m => m.year === 2023);
+  const purchased = mockMovies.filter(m => m.year === 2023 || m.isTrending);
   const continueWatching = mockMovies.slice(0, 2);
 
   return (
-    <div className="min-h-screen bg-zinc-950 pt-28 pb-20 overflow-x-hidden">
-      <div className="max-w-[1400px] mx-auto px-4 md:px-12">
+    <div className="min-h-screen bg-[#030306] pt-32 pb-24 overflow-x-hidden relative">
+      {/* Cinematic Film Grain */}
+      <div className="grain-overlay" />
+
+      {/* Volumetric glow backdrop */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] radial-glow-gold rounded-full filter blur-[150px] opacity-15 pointer-events-none" />
+      <div className="absolute top-1/3 left-0 w-[500px] h-[500px] radial-glow-blue rounded-full filter blur-[150px] opacity-10 pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Premium Profile Header */}
+        {/* Premium Profile Billboard */}
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-16 bg-zinc-900/40 border border-white/10 rounded-3xl p-8 backdrop-blur-xl relative overflow-hidden"
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          className="relative mb-16 rounded-[2.5rem] overflow-hidden border border-white/10 glass-panel-heavy shadow-cinematic p-8 md:p-12 flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12"
         >
-          {/* Decorative glow */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[100px] -z-10" />
-          
-          <div className="relative">
-            <div className="w-28 h-28 md:w-32 md:h-32 rounded-full bg-gradient-to-tr from-primary to-primary/40 flex items-center justify-center overflow-hidden border-[4px] border-zinc-950 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-              <span className="text-4xl md:text-5xl font-bold text-black tracking-tighter">JD</span>
+          {/* Subtle inside gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-gold-500/5 via-transparent to-white/5 pointer-events-none" />
+
+          {/* Profile Circle Accent */}
+          <div className="relative flex-shrink-0">
+            <div className="w-28 h-28 md:w-32 md:h-32 rounded-full bg-gradient-to-tr from-gold-600 via-gold-500 to-gold-300 flex items-center justify-center border-4 border-zinc-950 shadow-[0_0_40px_rgba(212,163,89,0.25)] overflow-hidden">
+              <User className="w-12 h-12 text-zinc-950" />
             </div>
-            <button className="absolute bottom-0 right-0 bg-white text-black p-2 rounded-full shadow-lg hover:scale-110 transition-transform">
-              <Settings className="w-4 h-4" />
-            </button>
+            {/* Patron badge */}
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gold-500 border border-gold-400 text-[9px] uppercase tracking-widest font-black text-zinc-950 flex items-center gap-1 shadow-lg">
+              <Award className="w-3 h-3" /> Patron
+            </div>
           </div>
           
-          <div className="text-center md:text-left flex-1 mt-2">
-            <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">John Doe</h1>
-            <p className="text-white/60 mb-6 font-light">john.doe@example.com</p>
+          {/* User Bio and Stats */}
+          <div className="text-center md:text-left flex-grow">
+            <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-white/5 border border-white/10 text-[9px] font-bold uppercase tracking-[0.2em] text-white/50 mb-3">
+              <Sparkles className="w-3 h-3 text-gold-400" /> Premium Account Space
+            </div>
             
-            {/* Quick Stats */}
-            <div className="flex flex-wrap justify-center md:justify-start gap-6">
-              <div className="bg-black/40 border border-white/10 rounded-2xl px-6 py-4 backdrop-blur-md">
-                <div className="flex items-center gap-2 text-white/50 text-sm mb-1 font-medium uppercase tracking-wider">
-                  <Film className="w-4 h-4" /> Purchased
+            <h1 className="text-3xl md:text-4xl font-serif tracking-wide font-extrabold text-white mb-2 leading-tight">
+              John Doe
+            </h1>
+            <p className="text-white/40 text-xs md:text-sm font-light mb-6">Patron Member Since October 2024</p>
+            
+            {/* Quick stats with gold accent */}
+            <div className="flex flex-wrap justify-center md:justify-start gap-4">
+              <div className="px-5 py-3 rounded-xl bg-white/5 border border-white/5 flex items-center gap-3">
+                <Film className="w-4 h-4 text-gold-400" />
+                <div className="text-left">
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-white/40">Purchased Titles</p>
+                  <p className="text-lg font-bold text-white">12 Movies</p>
                 </div>
-                <div className="text-3xl font-bold text-white">12</div>
               </div>
-              <div className="bg-black/40 border border-white/10 rounded-2xl px-6 py-4 backdrop-blur-md">
-                <div className="flex items-center gap-2 text-white/50 text-sm mb-1 font-medium uppercase tracking-wider">
-                  <HeartHandshake className="w-4 h-4 text-primary" /> Donations
+              
+              <div className="px-5 py-3 rounded-xl bg-white/5 border border-white/5 flex items-center gap-3">
+                <HeartHandshake className="w-4 h-4 text-gold-400" />
+                <div className="text-left">
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-white/40">Ministry Support</p>
+                  <p className="text-lg font-bold text-white">$450 donated</p>
                 </div>
-                <div className="text-3xl font-bold text-white">$450</div>
               </div>
             </div>
           </div>
         </motion.div>
 
+        {/* Dashboard Grid / Rows */}
         <div className="space-y-16">
-          {/* Continue Watching */}
-          <section>
-            <h2 className="text-2xl font-semibold text-white/90 mb-8 flex items-center gap-3">
-              <History className="w-6 h-6 text-white/50" /> Continue Watching
+          
+          {/* Continue Watching Section */}
+          <section className="space-y-6">
+            <h2 className="text-lg md:text-xl font-display font-semibold tracking-wider text-white/80 flex items-center gap-3">
+              <span className="w-1.5 h-6 bg-gold-500 rounded-full" />
+              Continue Watching
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {continueWatching.map((movie, i) => (
                 <motion.div 
                   key={movie.id} 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="group relative rounded-2xl overflow-hidden border border-white/10 cursor-pointer bg-zinc-900/50"
+                  transition={{ duration: 0.8, delay: i * 0.15 }}
+                  className="group relative rounded-2xl overflow-hidden border border-white/10 cursor-pointer bg-zinc-950/60 shadow-lg"
                 >
                   <div className="aspect-video relative">
-                    <img src={movie.bannerUrl} alt={movie.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                    <img 
+                      src={movie.bannerUrl} 
+                      alt={movie.title} 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent" />
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-                      <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 group-hover:scale-110 transition-transform">
-                        <Play className="w-8 h-8 text-white fill-white ml-1" />
+                      <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 group-hover:scale-110 transition-transform">
+                        <Play className="w-6 h-6 text-white fill-white ml-0.5" />
                       </div>
                     </div>
-                    <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end">
-                      <div>
-                        <h3 className="text-white font-bold text-xl drop-shadow-md mb-1">{movie.title}</h3>
-                        <p className="text-white/70 text-sm font-medium drop-shadow-md">45m remaining</p>
-                      </div>
+                    <div className="absolute bottom-4 left-6 right-6">
+                      <span className="text-[9px] uppercase tracking-widest font-bold text-gold-400">45 Minutes Remaining</span>
+                      <h3 className="text-white font-serif font-bold text-lg md:text-xl drop-shadow-md mt-1">{movie.title}</h3>
                     </div>
                   </div>
-                  <div className="w-full h-1.5 bg-zinc-800">
-                    <div className="h-full bg-red-600 relative">
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-red-600 rounded-full shadow-[0_0_10px_rgba(220,38,38,0.8)]" />
+                  {/* Premium red-gold stream bar indicator */}
+                  <div className="w-full h-1 bg-zinc-900">
+                    <div className="h-full bg-gradient-to-r from-gold-500 to-gold-400 w-3/4 relative">
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-gold-400 rounded-full shadow-[0_0_8px_rgba(212,163,89,0.8)]" />
                     </div>
                   </div>
                 </motion.div>
@@ -95,48 +123,93 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          {/* Purchased Library */}
-          <section>
-            <MovieRow title="Purchased Library" movies={purchased} />
+          {/* Purchased Content Rows */}
+          <section className="-mx-4 md:-mx-8">
+            <MovieRow title="My Purchased Presentations" movies={purchased} />
           </section>
 
-          {/* Favorites */}
-          <section>
-            <h2 className="text-2xl font-semibold text-white/90 mb-8 flex items-center gap-3 mt-8">
-              <Heart className="w-6 h-6 text-primary" /> My List
+          {/* Wishlist / My List Grid */}
+          <section className="space-y-6">
+            <h2 className="text-lg md:text-xl font-display font-semibold tracking-wider text-white/80 flex items-center gap-3">
+              <span className="w-1.5 h-6 bg-gold-500 rounded-full" />
+              Watchlist & Favorites
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
-              {favorites.map((movie) => (
-                <div key={movie.id} className="relative aspect-[2/3] rounded-xl overflow-hidden cursor-pointer group shadow-lg border border-white/10">
-                  <img src={movie.posterUrl} alt={movie.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
-                    <h3 className="text-white font-bold text-sm drop-shadow-md line-clamp-2">{movie.title}</h3>
-                    <p className="text-white/50 text-xs mt-1">{movie.year}</p>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
+              {favorites.map((movie, index) => (
+                <motion.div 
+                  key={movie.id}
+                  whileHover={{ y: -5 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  className="relative aspect-[2/3] rounded-2xl overflow-hidden cursor-pointer group shadow-lg border border-white/5 bg-zinc-950"
+                >
+                  <img 
+                    src={movie.posterUrl} 
+                    alt={movie.title} 
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
+                  
+                  {/* Expanded Hover Cover */}
+                  <div className="absolute inset-0 bg-[#030306]/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
+                    <h3 className="text-white font-serif font-bold text-sm leading-snug">{movie.title}</h3>
+                    <p className="text-[10px] text-gold-400 font-semibold mt-1">{movie.year}</p>
+                    
+                    <Link href={`/movie/${movie.id}`} className="mt-4">
+                      <CinematicButton variant="gold" size="sm" className="w-full text-[9px] uppercase tracking-widest py-2 h-auto rounded-lg">
+                        Details
+                      </CinematicButton>
+                    </Link>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </section>
 
-          {/* Recent Activity / Donations */}
-          <section className="bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-sm">
-            <h2 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-              <HeartHandshake className="w-5 h-5 text-primary" /> Recent Donations
+          {/* Premium Donation History - Styled as elegant Receipt Ledger */}
+          <section className="space-y-6">
+            <h2 className="text-lg md:text-xl font-display font-semibold tracking-wider text-white/80 flex items-center gap-3">
+              <span className="w-1.5 h-6 bg-gold-500 rounded-full" />
+              Patronage & Ministry Ledger
             </h2>
-            <div className="space-y-4">
-              {[
-                { org: "Angel Studios", amount: "$50.00", date: "Oct 12, 2024" },
-                { org: "The Chosen Season 5", amount: "$100.00", date: "Sep 28, 2024" },
-                { org: "Jesus Revolution Creators", amount: "$25.00", date: "Aug 15, 2024" },
-              ].map((donation, i) => (
-                <div key={i} className="flex justify-between items-center py-4 border-b border-white/10 last:border-0 last:pb-0">
-                  <div>
-                    <h4 className="text-white font-medium">{donation.org}</h4>
-                    <p className="text-white/50 text-sm">{donation.date}</p>
-                  </div>
-                  <div className="text-lg font-bold text-primary">{donation.amount}</div>
+            
+            <div className="glass-panel rounded-3xl border-white/10 p-6 md:p-10 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+              
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-white/5 pb-6 mb-6">
+                <div>
+                  <h3 className="text-white font-serif font-bold text-lg">Direct Creator Impact</h3>
+                  <p className="text-xs text-white/40 font-light mt-0.5">Your support history directly impacts Christian filmmaking ministries.</p>
                 </div>
-              ))}
+                <div className="mt-4 md:mt-0 text-[10px] font-bold uppercase tracking-wider text-gold-400 px-3 py-1 rounded bg-gold-500/10 border border-gold-500/20">
+                  Total Donated: $450.00
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {[
+                  { org: "Angel Studios", campaign: "Sound of Freedom Distribution", amount: "$50.00", date: "Oct 12, 2024", invoice: "#INV-92831" },
+                  { org: "The Chosen Season 5", campaign: "Production Support Campaign", amount: "$100.00", date: "Sep 28, 2024", invoice: "#INV-84192" },
+                  { org: "Jesus Revolution Creators", campaign: "Uplifting Stories Outreach", amount: "$25.00", date: "Aug 15, 2024", invoice: "#INV-72810" },
+                ].map((donation, i) => (
+                  <div 
+                    key={i} 
+                    className="flex flex-col sm:flex-row justify-between sm:items-center py-4 border-b border-white/5 last:border-0 last:pb-0"
+                  >
+                    <div>
+                      <h4 className="text-white font-medium text-sm flex items-center gap-2">
+                        {donation.org}
+                        <span className="text-[9px] uppercase tracking-wider font-semibold text-white/30">{donation.invoice}</span>
+                      </h4>
+                      <p className="text-xs text-white/50 font-light mt-0.5">{donation.campaign} • {donation.date}</p>
+                    </div>
+                    <div className="mt-2 sm:mt-0 text-right">
+                      <div className="text-sm font-bold text-gold-400 text-glow-gold">{donation.amount}</div>
+                      <div className="text-[8px] font-bold text-green-500/80 uppercase tracking-widest mt-0.5">Disbursed</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
 
