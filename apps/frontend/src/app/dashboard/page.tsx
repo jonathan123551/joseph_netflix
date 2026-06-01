@@ -22,7 +22,7 @@ export default function DashboardPage() {
   const [purchasedMovies, setPurchasedMovies] = useState<Movie[]>([]);
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [favorites, setFavorites] = useState<Movie[]>([]);
-  const [continueWatching, setContinueWatching] = useState<Movie[]>([]);
+  const [continueWatching, setContinueWatching] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -150,45 +150,55 @@ export default function DashboardPage() {
               Continue Watching
             </h2>
             
-            {continueWatching.length === 0 && (
-              <p className="text-white/40 text-sm font-light">
-                Nothing in progress yet. Press play on any title and it will appear here.
-              </p>
-            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {continueWatching.map((movie, i) => (
-                <motion.div 
-                  key={movie.id} 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: i * 0.15 }}
-                  className="group relative rounded-2xl overflow-hidden border border-white/10 cursor-pointer bg-zinc-950/60 shadow-lg"
-                >
-                  <div className="aspect-video relative">
-                    <img 
-                      src={movie.bannerUrl} 
-                      alt={movie.title} 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent" />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-                      <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 group-hover:scale-110 transition-transform">
-                        <History className="w-6 h-6 text-white ml-0.5" />
+              {continueWatching.map((movie, i) => {
+                let progressPercent = 75;
+                if (movie.progressSecs && movie.duration) {
+                  const mins = parseInt(movie.duration) || 120;
+                  const totalSecs = mins * 60;
+                  progressPercent = Math.min(100, Math.max(0, (movie.progressSecs / totalSecs) * 100));
+                }
+
+                return (
+                  <Link href={`/movie/${movie.id}`} key={movie.id} className="block">
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.8, delay: i * 0.15 }}
+                      className="group relative rounded-2xl overflow-hidden border border-white/10 cursor-pointer bg-zinc-950/60 shadow-lg"
+                    >
+                      <div className="aspect-video relative">
+                        <img 
+                          src={movie.bannerUrl} 
+                          alt={movie.title} 
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent" />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                          <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 group-hover:scale-110 transition-transform">
+                            <History className="w-6 h-6 text-white ml-0.5" />
+                          </div>
+                        </div>
+                        <div className="absolute bottom-4 left-6 right-6">
+                          <span className="text-[9px] uppercase tracking-widest font-bold text-gold-400">
+                            {movie.remainingLabel || "45 Minutes Remaining"}
+                          </span>
+                          <h3 className="text-white font-serif font-bold text-lg md:text-xl drop-shadow-md mt-1">{movie.title}</h3>
+                        </div>
                       </div>
-                    </div>
-                    <div className="absolute bottom-4 left-6 right-6">
-                      <span className="text-[9px] uppercase tracking-widest font-bold text-gold-400">45 Minutes Remaining</span>
-                      <h3 className="text-white font-serif font-bold text-lg md:text-xl drop-shadow-md mt-1">{movie.title}</h3>
-                    </div>
-                  </div>
-                  {/* Premium red-gold stream bar indicator */}
-                  <div className="w-full h-1 bg-zinc-900">
-                    <div className="h-full bg-gradient-to-r from-gold-500 to-gold-400 w-3/4 relative">
-                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-gold-400 rounded-full shadow-[0_0_8px_rgba(212,163,89,0.8)]" />
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                      {/* Premium red-gold stream bar indicator */}
+                      <div className="w-full h-1 bg-zinc-900">
+                        <div 
+                          className="h-full bg-gradient-to-r from-gold-500 to-gold-400 relative"
+                          style={{ width: `${progressPercent}%` }}
+                        >
+                          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-gold-400 rounded-full shadow-[0_0_8px_rgba(212,163,89,0.8)]" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  </Link>
+                );
+              })}
             </div>
           </section>
 
@@ -207,11 +217,6 @@ export default function DashboardPage() {
               Watchlist & Favorites
             </h2>
             
-            {favorites.length === 0 && (
-              <p className="text-white/40 text-sm font-light">
-                Your list is empty. Tap “Add” on any film to save it here.
-              </p>
-            )}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
               {favorites.map((movie, index) => (
                 <motion.div 
