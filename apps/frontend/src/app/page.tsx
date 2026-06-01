@@ -9,62 +9,56 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <div className="relative min-h-screen bg-zinc-950 pb-24 overflow-x-hidden">
-      {/* Massive Cinematic Hero Section */}
-      <section className="relative h-[90vh] md:h-[100vh] w-full flex items-center">
-        {/* Background Layer */}
-        <div className="absolute inset-0 z-0">
+    <div className="relative min-h-screen bg-zinc-950 pb-20">
+      {/* Hero Section */}
+      <section className="relative h-[85vh] w-full">
+        {/* Background Image & Gradients */}
+        <div className="absolute inset-0">
           <img
             src={featuredMovie.bannerUrl}
             alt={featuredMovie.title}
-            className="w-full h-full object-cover scale-105"
+            className="w-full h-full object-cover"
           />
-          {/* Intense vignette and blending gradients */}
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/90 via-zinc-950/40 to-transparent" />
-          <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
+          <div className="absolute inset-0 bg-gradient-to-t-dark" />
+          <div className="absolute inset-0 bg-gradient-to-r-dark" />
+          <div className="absolute inset-0 bg-black/20" /> {/* Subtle darkening for text legibility */}
         </div>
 
         {/* Hero Content */}
-        <div className="relative z-10 px-4 md:px-16 w-full max-w-6xl mt-20 md:mt-32">
+        <div className="relative h-full flex flex-col justify-end px-4 md:px-12 pb-24 md:pb-32 max-w-4xl">
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="max-w-2xl"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
           >
-            {/* Soft glow behind text */}
-            <div className="relative">
-              <div className="absolute -inset-8 bg-primary/20 blur-[80px] rounded-full opacity-50" />
-              <h1 className="relative text-5xl md:text-7xl lg:text-[6rem] font-bold text-white mb-6 tracking-tighter leading-[1.1] drop-shadow-2xl">
-                {featuredMovie.title}
-              </h1>
-            </div>
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-4 drop-shadow-2xl tracking-tighter">
+              {featuredMovie.title}
+            </h1>
             
             <div className="flex items-center gap-4 text-sm md:text-base text-white/80 mb-6 font-medium">
-              <span className="text-green-500 font-semibold drop-shadow-md">98% Match</span>
-              <span className="drop-shadow-md">{featuredMovie.year}</span>
-              <span className="border border-white/30 px-2 py-0.5 rounded text-white/90 shadow-sm">
+              <span className="text-green-500 font-semibold">98% Match</span>
+              <span>{featuredMovie.year}</span>
+              <span className="border border-white/40 px-2 py-0.5 rounded-sm text-white/90">
                 {featuredMovie.rating}
               </span>
-              <span className="drop-shadow-md">{featuredMovie.duration}</span>
-              <span className="border border-white/20 px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider font-bold shadow-sm">HD</span>
+              <span>{featuredMovie.duration}</span>
+              <span className="border border-white/20 px-1 rounded-sm text-[10px]">HD</span>
             </div>
 
-            <p className="text-lg md:text-xl text-white/80 drop-shadow-lg mb-10 line-clamp-3 md:line-clamp-4 font-light leading-relaxed max-w-xl">
+            <p className="text-lg md:text-xl text-white/90 drop-shadow-lg mb-8 line-clamp-3 max-w-2xl font-light leading-relaxed">
               {featuredMovie.description}
             </p>
 
             <div className="flex items-center gap-4">
               <Link href={`/watch/${featuredMovie.id}`}>
-                <CinematicButton size="lg" className="gap-3 px-8 md:px-10 h-14 md:h-16 text-lg rounded-xl shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:scale-105 transition-all">
-                  <Play className="w-6 h-6 md:w-7 md:h-7 fill-black" />
-                  Watch Now
+                <CinematicButton size="lg" className="gap-2 px-8">
+                  <Play className="w-6 h-6 fill-black" />
+                  Play
                 </CinematicButton>
               </Link>
               <Link href={`/movie/${featuredMovie.id}`}>
-                <CinematicButton variant="glass" size="lg" className="gap-3 px-8 md:px-10 h-14 md:h-16 text-lg rounded-xl hover:scale-105 transition-all bg-white/10 border-white/20">
-                  <Info className="w-6 h-6 md:w-7 md:h-7" />
+                <CinematicButton variant="glass" size="lg" className="gap-2 px-8">
+                  <Info className="w-6 h-6" />
                   More Info
                 </CinematicButton>
               </Link>
@@ -74,7 +68,7 @@ export default function HomePage() {
       </section>
 
       {/* Content Rows */}
-      <section className="relative z-20 -mt-32 space-y-12 md:space-y-16">
+      <section className="relative z-10 -mt-24 space-y-8">
         {categories.map((category) => (
           <MovieRow 
             key={category.id} 
