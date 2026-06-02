@@ -22,7 +22,10 @@ export class UsersService {
       where: { userId, status: 'COMPLETED' },
     });
 
-    const totalDonations = donations.reduce((sum, d) => sum + Number(d.amount), 0);
+    const totalDonations = donations.reduce(
+      (sum, d) => sum + Number(d.amount),
+      0,
+    );
 
     return {
       name: user.name,

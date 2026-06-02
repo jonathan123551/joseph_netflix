@@ -195,6 +195,22 @@ class ApiClient {
     ];
     return this.request<Contribution[]>('/donations/my-contributions', {}, defaultContributions);
   }
+
+  async getPlaybackSource(movieId: string): Promise<any> {
+    const url = `${API_BASE_URL}/movies/${movieId}/playback`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      const errorMsg = await response.json().then((d) => d.message).catch(() => 'Unauthorized playback access');
+      throw new Error(errorMsg);
+    }
+    return response.json();
+  }
 }
 
 export const api = new ApiClient();

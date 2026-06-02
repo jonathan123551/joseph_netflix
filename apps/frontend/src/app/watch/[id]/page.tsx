@@ -14,27 +14,30 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
   
   const [movie, setMovie] = useState<Movie | null>(null);
   const [recommended, setRecommended] = useState<Movie[]>([]);
+  const [playbackUrl, setPlaybackUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadMovie() {
       try {
+        const playback = await api.getPlaybackSource(movieId);
+        setPlaybackUrl(playback.url);
+
         const details = await api.getMovieDetails(movieId);
         if (details) {
           setMovie(details);
           setRecommended(mockMovies.filter(m => m.id !== details.id).slice(2, 7));
         }
-      } catch (err) {
-        console.warn("Could not load watch details, falling back to mock.");
-        const fallback = mockMovies.find(m => m.id === movieId) || mockMovies[0];
-        setMovie(fallback);
-        setRecommended(mockMovies.filter(m => m.id !== fallback.id).slice(2, 7));
+      } catch (err: any) {
+        console.error("Playback entitlement check failed:", err);
+        alert(err.message || "You must purchase or rent this movie to watch it.");
+        router.push(`/movie/${movieId}`);
       } finally {
         setLoading(false);
       }
     }
     loadMovie();
-  }, [movieId]);
+  }, [movieId, router]);
 
   const handleBack = () => {
     if (movie) {
@@ -52,7 +55,7 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
     );
   }
 
-  if (!movie) {
+  if (!movie || !playbackUrl) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center text-white">
         Presentation not found.
@@ -63,7 +66,7 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
   return (
     <div className="min-h-screen bg-black">
       {/* Real Cinematic Player */}
-      <CinematicPlayer movie={movie} onBack={handleBack} />
+      <CinematicPlayer movie={movie} videoUrl={playbackUrl} onBack={handleBack} />
 
       {/* Recommended Below Player */}
       <div className="py-12 bg-zinc-950">

@@ -14,12 +14,18 @@ export class AdminService {
     const donations = await this.prisma.donation.findMany({
       where: { status: 'COMPLETED' },
     });
-    const totalDonations = donations.reduce((sum, d) => sum + Number(d.amount), 0);
+    const totalDonations = donations.reduce(
+      (sum, d) => sum + Number(d.amount),
+      0,
+    );
 
     const purchases = await this.prisma.purchase.findMany({
       where: { paymentStatus: 'COMPLETED' },
     });
-    const totalPurchaseRevenue = purchases.reduce((sum, p) => sum + Number(p.amount), 0);
+    const totalPurchaseRevenue = purchases.reduce(
+      (sum, p) => sum + Number(p.amount),
+      0,
+    );
 
     const recentLogs = await this.prisma.auditLog.findMany({
       take: 5,

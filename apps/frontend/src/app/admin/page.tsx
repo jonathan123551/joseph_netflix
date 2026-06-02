@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { Users, Film, DollarSign, TrendingUp, Search, Bell, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api, AdminStats } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 function currency(n: number): string {
   return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -36,17 +38,42 @@ function normalizeMovie(m: any): AdminMovie {
 }
 
 export default function AdminPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [movies, setMovies] = useState<AdminMovie[]>([]);
 
   useEffect(() => {
-    async function load() {
-      const [s, m] = await Promise.all([api.getAdminStats(), api.getAllMovies()]);
-      setStats(s);
-      setMovies(m.map(normalizeMovie));
+    if (!loading) {
+      if (!user || user.role !== "ADMIN") {
+        router.push("/");
+        return;
+      }
+
+      async function load() {
+        try {
+          const [s, m] = await Promise.all([api.getAdminStats(), api.getAllMovies()]);
+          setStats(s);
+          setMovies(m.map(normalizeMovie));
+        } catch (err) {
+          console.error("Failed to load admin stats:", err);
+        }
+      }
+      load();
     }
-    load();
-  }, []);
+  }, [user, loading, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="text-white/40 font-serif tracking-widest text-lg uppercase animate-pulse">Loading administration...</div>
+      </div>
+    );
+  }
+
+  if (!user || user.role !== "ADMIN") {
+    return null;
+  }
 
   const metrics = [
     { label: "Total Revenue", value: stats ? currency(stats.totalRevenue) : "\u2014", icon: DollarSign, color: "text-green-500" },

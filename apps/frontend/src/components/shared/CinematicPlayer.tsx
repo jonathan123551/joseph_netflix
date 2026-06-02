@@ -7,10 +7,11 @@ import { Movie } from "@/lib/mockData";
 
 interface CinematicPlayerProps {
   movie: Movie;
+  videoUrl: string;
   onBack: () => void;
 }
 
-export function CinematicPlayer({ movie, onBack }: CinematicPlayerProps) {
+export function CinematicPlayer({ movie, videoUrl, onBack }: CinematicPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -198,7 +199,7 @@ export function CinematicPlayer({ movie, onBack }: CinematicPlayerProps) {
       {/* Video Element */}
       <video
         ref={videoRef}
-        src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+        src={videoUrl}
         className="w-full h-full object-contain"
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}

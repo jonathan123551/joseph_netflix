@@ -34,15 +34,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             email: profile.email,
             role: profile.role,
           });
+        } else {
+          setUser(null);
         }
       } catch (err) {
-        console.warn("Could not load user profile on startup. Running in mock guest state.");
-        // Set guest profile default for flawless demo execution
-        setUser({
-          id: "guest-id-123",
-          email: "guest@josephfilms.com",
-          role: "USER",
-        });
+        console.warn("Could not load user profile on startup.");
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -51,68 +48,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    try {
-      // Direct call to auth endpoint
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-1871f.up.railway.app'}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-1871f.up.railway.app'}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+      credentials: "include",
+    });
 
-      if (!response.ok) {
-        throw new Error("Invalid credentials");
-      }
-
-      const result = await response.json();
-      setUser({
-        id: result.user.id,
-        email: result.user.email,
-        role: result.user.role,
-      });
-      return true;
-    } catch (err) {
-      console.warn("Backend auth failed. Using mock success for demo credentials.");
-      // Fallback: Success on guest demo credentials
-      if (email === "guest@josephfilms.com" || email.includes("@")) {
-        setUser({
-          id: "guest-id-123",
-          email: email,
-          role: "USER",
-        });
-        return true;
-      }
-      return false;
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.message || "Invalid credentials");
     }
+
+    const result = await response.json();
+    setUser({
+      id: result.user.id,
+      email: result.user.email,
+      role: result.user.role,
+    });
+    return true;
   };
 
   const register = async (name: string, email: string, password: string): Promise<boolean> => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-1871f.up.railway.app'}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-1871f.up.railway.app'}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+      credentials: "include",
+    });
 
-      if (!response.ok) {
-        throw new Error("Registration failed");
-      }
-
-      const result = await response.json();
-      setUser({
-        id: result.user.id,
-        email: result.user.email,
-        role: result.user.role,
-      });
-      return true;
-    } catch (err) {
-      console.warn("Backend registration failed. Using mock success for demo registers.");
-      setUser({
-        id: "guest-id-123",
-        email: email,
-        role: "USER",
-      });
-      return true;
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.message || "Registration failed");
     }
+
+    const result = await response.json();
+    setUser({
+      id: result.user.id,
+      email: result.user.email,
+      role: result.user.role,
+    });
+    return true;
   };
 
   const logout = async () => {

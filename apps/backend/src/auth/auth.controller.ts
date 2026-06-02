@@ -15,7 +15,12 @@ import { LoginDto } from './dto/login.dto';
 import type { Request, Response } from 'express';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/user.decorator';
-import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiCookieAuth,
+} from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
 
 @ApiTags('auth')
@@ -27,14 +32,14 @@ export class AuthController {
     const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
       maxAge: 15 * 60 * 1000, // 15 minutes
     });
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
   }
@@ -85,7 +90,9 @@ export class AuthController {
   ) {
     const oldRefreshToken = req.cookies?.refreshToken;
     if (!oldRefreshToken) {
-      res.status(HttpStatus.UNAUTHORIZED).send({ message: 'No refresh token provided' });
+      res
+        .status(HttpStatus.UNAUTHORIZED)
+        .send({ message: 'No refresh token provided' });
       return;
     }
     const ipAddress = req.ip;
@@ -105,14 +112,17 @@ export class AuthController {
   @ApiCookieAuth()
   @ApiOperation({ summary: 'Logout current device' })
   @ApiResponse({ status: 200, description: 'User successfully logged out.' })
-  async logout(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const refreshToken = req.cookies?.refreshToken;
     await this.authService.logout(refreshToken);
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieOpts = {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? ('none' as const) : ('lax' as const),
+    };
+    res.clearCookie('accessToken', cookieOpts);
+    res.clearCookie('refreshToken', cookieOpts);
     return { message: 'Logged out successfully' };
   }
 
@@ -121,17 +131,26 @@ export class AuthController {
   @Post('logout-all')
   @ApiCookieAuth()
   @ApiOperation({ summary: 'Logout all devices' })
-  @ApiResponse({ status: 200, description: 'User successfully logged out from all devices.' })
+  @ApiResponse({
+    status: 200,
+    description: 'User successfully logged out from all devices.',
+  })
   async logoutAll(
     @CurrentUser() user: any,
     @Res({ passthrough: true }) res: Response,
   ) {
     await this.authService.logoutAll(user.sub);
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieOpts = {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? ('none' as const) : ('lax' as const),
+    };
+    res.clearCookie('accessToken', cookieOpts);
+    res.clearCookie('refreshToken', cookieOpts);
     return { message: 'Logged out from all devices successfully' };
   }
-  
+
   @UseGuards(JwtAuthGuard)
   @Get('me')
   @ApiCookieAuth()
