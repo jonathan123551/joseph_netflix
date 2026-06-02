@@ -19,6 +19,7 @@ export interface PlaybackSource {
 export interface PlaybackOptions {
   /** Seconds the signed URL should remain valid (providers that support it). */
   ttlSeconds?: number;
+  clientIp?: string;
 }
 
 /**

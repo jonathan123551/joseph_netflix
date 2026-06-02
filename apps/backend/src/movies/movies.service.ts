@@ -22,7 +22,7 @@ export class MoviesService {
    * (a COMPLETED purchase or an active, unexpired rental WatchSession).
    * The URL is produced by the configured VideoProvider (local or Bunny.net).
    */
-  async getPlayback(userId: string, movieId: string) {
+  async getPlayback(userId: string, movieId: string, clientIp?: string) {
     const movie = await this.prisma.movie.findUnique({
       where: { id: movieId },
       select: { id: true, title: true, published: true },
@@ -65,7 +65,7 @@ export class MoviesService {
       quality: file.quality,
       storageProvider: file.storageProvider,
       storagePath: file.storagePath,
-    });
+    }, { clientIp });
 
     return { movieId: movie.id, title: movie.title, ...source };
   }

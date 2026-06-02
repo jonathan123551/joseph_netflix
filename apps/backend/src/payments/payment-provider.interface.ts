@@ -11,6 +11,7 @@ export interface PaymentIntentInput {
   kind: PaymentKind;
   description: string;
   metadata?: Record<string, string>;
+  referenceId?: string; // DB reference ID (e.g. Purchase ID or Donation ID)
 }
 
 export interface PaymentResult {
@@ -20,13 +21,10 @@ export interface PaymentResult {
   reference: string | null;
   /** For client-confirmed flows (e.g. Stripe Elements). */
   clientSecret?: string | null;
+  /** For redirect flows (e.g. Stripe Checkout Sessions). */
+  checkoutUrl?: string | null;
 }
 
-/**
- * Abstraction over the payment gateway. The default implementation
- * (MockPaymentProvider) completes payments instantly to preserve the
- * existing MVP behavior. Swap to Stripe by setting PAYMENT_PROVIDER=stripe.
- */
 export interface PaymentProvider {
   readonly name: string;
   createPayment(input: PaymentIntentInput): Promise<PaymentResult>;

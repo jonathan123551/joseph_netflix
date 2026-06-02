@@ -1,25 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 import { PaymentStatus } from '@prisma/client';
+import { randomUUID } from 'crypto';
 import {
   PaymentIntentInput,
   PaymentProvider,
   PaymentResult,
 } from './payment-provider.interface';
 
-/**
- * Default provider used until a real gateway is configured. Completes every
- * payment instantly, mirroring the original MVP behavior.
- */
 @Injectable()
 export class MockPaymentProvider implements PaymentProvider {
   readonly name = 'mock';
 
   createPayment(input: PaymentIntentInput): Promise<PaymentResult> {
     return Promise.resolve({
-      status: PaymentStatus.COMPLETED,
+      status: PaymentStatus.COMPLETED, // Instantly complete in mock
       reference: `mock_${input.kind.toLowerCase()}_${randomUUID()}`,
-      clientSecret: null,
+      checkoutUrl: `http://localhost:3000/success?session_id=mock_session`,
+      clientSecret: `mock_secret_${randomUUID()}`,
     });
   }
 }

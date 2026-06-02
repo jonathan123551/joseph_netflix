@@ -14,6 +14,8 @@ import { FavoritesModule } from './favorites/favorites.module';
 import { WatchHistoryModule } from './watch-history/watch-history.module';
 import { PaymentsModule } from './payments/payments.module';
 import { VideoModule } from './video/video.module';
+import { MinistriesModule } from './ministries/ministries.module';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { VideoModule } from './video/video.module';
         limit: 100, // Increase limits for demo dashboard loads
       },
     ]),
+    MinistriesModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

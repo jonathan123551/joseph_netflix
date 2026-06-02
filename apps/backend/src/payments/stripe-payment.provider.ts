@@ -1,44 +1,78 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PaymentStatus } from '@prisma/client';
+import Stripe from 'stripe';
 import {
   PaymentIntentInput,
   PaymentProvider,
   PaymentResult,
 } from './payment-provider.interface';
 
-/**
- * Stripe-ready provider. This is intentionally a thin, dependency-free
- * scaffold: when STRIPE_SECRET_KEY is set the implementation below should
- * create a PaymentIntent via the Stripe SDK and return its id + client_secret,
- * leaving the row PENDING until a webhook confirms it. Until the SDK is wired,
- * selecting this provider returns PENDING so nothing is silently marked paid.
- *
- * To finish wiring:
- *   1. `pnpm --filter backend add stripe`
- *   2. const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
- *   3. const intent = await stripe.paymentIntents.create({
- *        amount: Math.round(input.amount * 100),
- *        currency: input.currency ?? 'usd',
- *        metadata: { userId: input.userId, kind: input.kind, ...input.metadata },
- *      })
- *   4. return { status: PENDING, reference: intent.id, clientSecret: intent.client_secret }
- *   5. Add a webhook controller that flips the row to COMPLETED/FAILED.
- */
 @Injectable()
 export class StripePaymentProvider implements PaymentProvider {
   readonly name = 'stripe';
   private readonly logger = new Logger(StripePaymentProvider.name);
+  private stripe: any | null = null;
 
-  createPayment(input: PaymentIntentInput): Promise<PaymentResult> {
-    if (!process.env.STRIPE_SECRET_KEY) {
-      this.logger.warn(
-        `PAYMENT_PROVIDER=stripe but STRIPE_SECRET_KEY is not set; returning PENDING for ${input.kind}.`,
-      );
+  constructor() {
+    if (process.env.STRIPE_SECRET_KEY) {
+      this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     }
-    return Promise.resolve({
-      status: PaymentStatus.PENDING,
-      reference: null,
-      clientSecret: null,
-    });
+  }
+
+  async createPayment(input: PaymentIntentInput): Promise<PaymentResult> {
+    if (!this.stripe) {
+      this.logger.warn(`STRIPE_SECRET_KEY missing; mock mode fallback`);
+      return { status: PaymentStatus.PENDING, reference: null, clientSecret: null };
+    }
+
+    if (input.kind === 'DONATION') {
+      const intent = await this.stripe.paymentIntents.create({
+        amount: Math.round(input.amount * 100),
+        currency: input.currency ?? 'usd',
+        metadata: { userId: input.userId, kind: input.kind, referenceId: input.referenceId ?? '' },
+      });
+      return {
+        status: PaymentStatus.PENDING,
+        reference: intent.id,
+        clientSecret: intent.client_secret,
+      };
+    } else {
+      const session = await this.stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: input.currency ?? 'usd',
+              product_data: {
+                name: input.description,
+              },
+              unit_amount: Math.round(input.amount * 100),
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/cancel`,
+        metadata: { userId: input.userId, kind: input.kind, referenceId: input.referenceId ?? '' },
+      });
+
+      return {
+        status: PaymentStatus.PENDING,
+        reference: session.id,
+        checkoutUrl: session.url,
+      };
+    }
+  }
+
+  get webhookSecret(): string | undefined {
+    return process.env.STRIPE_WEBHOOK_SECRET;
+  }
+
+  constructEvent(payload: Buffer, signature: string): any {
+    if (!this.stripe || !this.webhookSecret) {
+      throw new Error('Stripe not configured');
+    }
+    return this.stripe.webhooks.constructEvent(payload, signature, this.webhookSecret);
   }
 }

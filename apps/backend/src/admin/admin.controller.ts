@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, Query } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -18,5 +18,11 @@ export class AdminController {
   @ApiOperation({ summary: 'Get overall admin statistics' })
   getOverviewStats() {
     return this.adminService.getOverviewStats();
+  }
+
+  @Get('analytics')
+  @ApiOperation({ summary: 'Get detailed analytics aggregations' })
+  getAnalytics(@Query('filter') filter: 'today' | 'week' | 'month' | 'all') {
+    return this.adminService.getAnalytics(filter || 'all');
   }
 }

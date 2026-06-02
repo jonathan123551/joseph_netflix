@@ -1,4 +1,5 @@
-import { Controller, Post, Body, UseGuards, Headers } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Headers, Req, RawBodyRequest } from '@nestjs/common';
+import { Request } from 'express';
 import { PaymentsService } from './payments.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/user.decorator';
@@ -13,7 +14,7 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard)
   @ApiCookieAuth()
   @ApiOperation({
-    summary: 'Create Stripe checkout session (Mock URL token returned)',
+    summary: 'Create Stripe checkout session or Payment Intent for donations',
   })
   createCheckoutSession(
     @CurrentUser() user: any,
@@ -31,12 +32,13 @@ export class PaymentsController {
 
   @Post('webhook')
   @ApiOperation({
-    summary: 'Stripe webhook (Mocks database updates on success callbacks)',
+    summary: 'Stripe webhook listener to finalize purchases and donations',
   })
   handleWebhook(
-    @Body() payload: any,
+    @Req() req: any,
     @Headers('stripe-signature') signature: string,
   ) {
-    return this.paymentsService.verifyWebhook(payload, signature);
+    // Pass the raw buffer down to the service for signature verification
+    return this.paymentsService.verifyWebhook(req.rawBody, signature);
   }
 }

@@ -56,16 +56,20 @@ export class BunnyVideoProvider implements VideoProvider {
 
     const ttl = opts?.ttlSeconds ?? 3600;
     const expires = Math.floor(Date.now() / 1000) + ttl;
+    const ipStr = opts?.clientIp ? opts.clientIp : '';
+    
     const token = createHash('md5')
-      .update(tokenKey + path + expires)
+      .update(tokenKey + path + expires + ipStr)
       .digest('base64')
       .replace(/\n/g, '')
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=/g, '');
 
+    const ipParam = opts?.clientIp ? `&token_path_ip=${opts.clientIp}` : '';
+
     return {
-      url: `${base}?token=${token}&expires=${expires}`,
+      url: `${base}?token=${token}&expires=${expires}${ipParam}`,
       provider: this.name,
       quality: file.quality,
       expiresAt: new Date(expires * 1000),

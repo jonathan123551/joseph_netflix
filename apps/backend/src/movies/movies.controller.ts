@@ -7,7 +7,9 @@ import {
   Body,
   Query,
   UseGuards,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { MoviesService } from './movies.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -61,8 +63,9 @@ export class MoviesController {
   @UseGuards(JwtAuthGuard)
   @ApiCookieAuth()
   @ApiOperation({ summary: 'Get a playback source (requires purchase/rental)' })
-  getPlayback(@CurrentUser() user: JwtUser, @Param('id') id: string) {
-    return this.moviesService.getPlayback(user.sub, id);
+  getPlayback(@CurrentUser() user: JwtUser, @Param('id') id: string, @Req() req: any) {
+    const clientIp = (req.headers['x-forwarded-for'] || req.socket.remoteAddress) as string;
+    return this.moviesService.getPlayback(user.sub, id, clientIp);
   }
 
   @Get(':id')
