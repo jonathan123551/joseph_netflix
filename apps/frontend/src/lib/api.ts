@@ -179,6 +179,15 @@ class ApiClient {
     }
     return response.json();
   }
+
+  // MINISTRIES API
+  async getMinistries(): Promise<any[]> {
+    return this.request<any[]>('/ministries');
+  }
+
+  async getMinistryById(id: string): Promise<any> {
+    return this.request<any>(`/ministries/${id}`);
+  }
 }
 
 export const api = new ApiClient();

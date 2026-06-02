@@ -95,8 +95,31 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
 
   if (!movie) {
     return (
-      <div className="min-h-screen bg-[#030306] flex items-center justify-center">
-        <div className="text-white/40 font-serif tracking-widest text-lg uppercase animate-pulse">Loading presentation...</div>
+      <div className="min-h-screen bg-[#030306] pb-24 overflow-x-hidden relative pt-32 md:pt-40">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+            <div className="lg:col-span-8 space-y-8 md:space-y-12">
+              <div className="space-y-6">
+                <div className="w-32 h-4 rounded bg-white/5 animate-pulse" />
+                <div className="w-3/4 h-16 sm:h-20 rounded-xl bg-white/5 animate-pulse" />
+                <div className="flex gap-4">
+                  <div className="w-24 h-4 rounded bg-white/5 animate-pulse" />
+                  <div className="w-16 h-4 rounded bg-white/5 animate-pulse" />
+                  <div className="w-20 h-4 rounded bg-white/5 animate-pulse" />
+                </div>
+                <div className="space-y-3 pt-4">
+                  <div className="w-full h-4 rounded bg-white/5 animate-pulse" />
+                  <div className="w-full h-4 rounded bg-white/5 animate-pulse" />
+                  <div className="w-2/3 h-4 rounded bg-white/5 animate-pulse" />
+                </div>
+              </div>
+              <div className="w-full aspect-video rounded-2xl bg-white/5 animate-pulse" />
+            </div>
+            <div className="lg:col-span-4 lg:sticky lg:top-28">
+              <div className="w-full h-96 rounded-[2.25rem] bg-white/5 animate-pulse" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

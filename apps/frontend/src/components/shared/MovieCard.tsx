@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-mo
 import { Play, Plus, ThumbsUp, ChevronDown, Check } from "lucide-react";
 import Link from "next/link";
 import { Movie } from "@/lib/mockData";
+import { api } from "@/lib/api";
 
 interface MovieCardProps {
   movie: Movie;
@@ -140,9 +141,20 @@ export function MovieCard({ movie }: MovieCardProps) {
                   <motion.button 
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.stopPropagation();
-                      setIsAdded(!isAdded);
+                      const nextState = !isAdded;
+                      setIsAdded(nextState);
+                      try {
+                        if (nextState) {
+                          await api.addFavorite(movie.id);
+                        } else {
+                          await api.removeFavorite(movie.id);
+                        }
+                      } catch (err) {
+                        setIsAdded(!nextState);
+                        console.error("Failed to toggle favorite", err);
+                      }
                     }}
                     className="w-7 h-7 rounded-full border border-white/20 bg-white/5 flex items-center justify-center hover:border-white transition-colors cursor-pointer"
                   >
