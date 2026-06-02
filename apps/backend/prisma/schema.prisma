@@ -61,7 +61,9 @@ model Movie {
   published       Boolean          @default(false)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  ministryId      String?
 
+  ministry        Ministry?        @relation(fields: [ministryId], references: [id], onDelete: SetNull)
   assets          MovieAsset[]
   actors          MovieActor[]
   categories      MovieCategory[]
@@ -76,6 +78,7 @@ model Movie {
   @@index([featured])
   @@index([title])
   @@index([releaseDate])
+  @@index([ministryId])
 }
 
 model MovieAsset {
@@ -192,15 +195,18 @@ model WatchHistory {
 }
 
 model Donation {
-  id        String        @id @default(uuid())
-  userId    String
-  amount    Decimal       @db.Decimal(10, 2)
-  status    PaymentStatus @default(PENDING)
-  createdAt DateTime      @default(now())
+  id         String        @id @default(uuid())
+  userId     String
+  ministryId String?
+  amount     Decimal       @db.Decimal(10, 2)
+  status     PaymentStatus @default(PENDING)
+  createdAt  DateTime      @default(now())
 
-  user      User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user       User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  ministry   Ministry?     @relation(fields: [ministryId], references: [id], onDelete: Restrict)
 
   @@index([userId])
+  @@index([ministryId])
 }
 
 model Review {
@@ -258,4 +264,22 @@ model RefreshToken {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model Ministry {
+  id              String         @id @default(uuid())
+  name            String
+  slug            String         @unique
+  description     String?
+  mission         String?
+  impactMetrics   Json?          // E.g., { "waterWells": 50, "peopleHelped": 1000 }
+  goalAmount      Decimal?       @db.Decimal(10, 2)
+  raisedAmount    Decimal?       @db.Decimal(10, 2) @default(0.0)
+  logoUrl         String?
+  bannerUrl       String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  movies          Movie[]
+  donations       Donation[]
 }
