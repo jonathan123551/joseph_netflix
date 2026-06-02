@@ -5,14 +5,15 @@ import { Play, Info, Sparkles, Volume2, VolumeX } from "lucide-react";
 import { useState, useEffect } from "react";
 import { CinematicButton } from "@/components/ui/CinematicButton";
 import { MovieRow } from "@/components/shared/MovieRow";
-import { categories, featuredMovie, Movie } from "@/lib/mockData";
+import { Movie } from "@/lib/api";
 import { api } from "@/lib/api";
 import Link from "next/link";
 
 export default function HomePage() {
   const [isMuted, setIsMuted] = useState(true);
-  const [featured, setFeatured] = useState<Movie>(featuredMovie);
-  const [rows, setRows] = useState<any[]>(categories);
+  const [featured, setFeatured] = useState<Movie | null>(null);
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchHomeData() {
@@ -22,11 +23,21 @@ export default function HomePage() {
         if (feat) setFeatured(feat);
         if (movieRows && movieRows.length > 0) setRows(movieRows);
       } catch (err) {
-        console.warn("Could not load homepage data from API, using static presets.");
+        console.error("Could not load homepage data from API:", err);
+      } finally {
+        setLoading(false);
       }
     }
     fetchHomeData();
   }, []);
+
+  if (loading) {
+    return <div className="min-h-screen bg-[#030306] flex items-center justify-center text-gold-500">Loading...</div>;
+  }
+
+  if (!featured) {
+    return <div className="min-h-screen bg-[#030306] flex items-center justify-center text-white/50">No movies available</div>;
+  }
 
   return (
     <div className="relative min-h-screen bg-[#030306] pb-24 overflow-x-hidden">

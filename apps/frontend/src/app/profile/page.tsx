@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { api, UserProfile } from "@/lib/api";
-import { Movie, mockMovies } from "@/lib/mockData";
+import { Movie } from "@/lib/api";
 import { MovieCard } from "@/components/shared/MovieCard";
 import { Settings, Clock, ShoppingBag, Tv, CreditCard, User, Bell, Shield, LogOut } from "lucide-react";
 
@@ -31,8 +31,8 @@ export default function ProfilePage() {
           totalDonations: 250,
         });
 
-        setLibrary(libData.length ? libData : mockMovies.slice(0, 4));
-        setHistory(histData.length ? histData : mockMovies.slice(2, 6));
+        setLibrary(libData.length ? libData : []);
+        setHistory(histData.length ? histData : []);
       } catch (err) {
         console.error("Failed to load profile", err);
       } finally {

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Play, Heart, ShoppingBag, Tv, Share2, Check, Sparkles } from "lucide-react";
 import { CinematicButton } from "@/components/ui/CinematicButton";
-import { mockMovies, Movie } from "@/lib/mockData";
+import { Movie } from "@/lib/api";
 import { MovieRow } from "@/components/shared/MovieRow";
 import { api } from "@/lib/api";
 
@@ -28,16 +28,15 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
         const details = await api.getMovieDetails(movieId);
         if (details) {
           setMovie(details);
-          const similar = mockMovies.filter(m => m.id !== details.id).slice(0, 5);
-          setSimilarMovies(similar);
+          try {
+            const allMovies = await api.getAllMovies();
+            setSimilarMovies(allMovies.filter((m: Movie) => m.id !== details.id).slice(0, 5));
+          } catch(e) {}
         }
         const favorites = await api.getFavorites();
         setIsFavorite(favorites.some((f) => f.id === movieId));
       } catch (err) {
-        console.warn("Could not retrieve movie details from API. Using defaults.");
-        const fallbackMovie = mockMovies.find(m => m.id === movieId) || mockMovies[0];
-        setMovie(fallbackMovie);
-        setSimilarMovies(mockMovies.filter(m => m.id !== fallbackMovie.id).slice(0, 5));
+        console.warn("Could not retrieve movie details from API.");
       }
     }
     loadMovieData();
@@ -245,7 +244,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                 <div>
                   <h4 className="text-[10px] uppercase tracking-wider font-bold text-white/40 mb-1">Genres</h4>
                   <div className="flex flex-wrap gap-1.5 mt-1.5">
-                    {movie.genres.map(genre => (
+                    {movie.genres?.map((genre: string) => (
                       <span key={genre} className="text-xs px-2.5 py-0.5 rounded-full bg-white/5 border border-white/5 text-white/70">
                         {genre}
                       </span>
@@ -256,7 +255,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               <div>
                 <h4 className="text-[10px] uppercase tracking-wider font-bold text-white/40 mb-1">Starring Cast</h4>
                 <ul className="space-y-1.5 text-white/80 font-medium">
-                  {movie.cast.map(actor => (
+                  {movie.cast?.map((actor: string) => (
                     <li key={actor}>{actor}</li>
                   ))}
                 </ul>

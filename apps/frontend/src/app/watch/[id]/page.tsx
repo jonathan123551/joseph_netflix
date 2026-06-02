@@ -2,7 +2,7 @@
 
 import { use, useState, useEffect } from "react";
 import { CinematicPlayer } from "@/components/shared/CinematicPlayer";
-import { Movie, mockMovies } from "@/lib/mockData";
+import { Movie } from "@/lib/api";
 import { MovieRow } from "@/components/shared/MovieRow";
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
@@ -26,7 +26,10 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
         const details = await api.getMovieDetails(movieId);
         if (details) {
           setMovie(details);
-          setRecommended(mockMovies.filter(m => m.id !== details.id).slice(2, 7));
+          try {
+            const allMovies = await api.getAllMovies();
+            setRecommended(allMovies.filter((m: Movie) => m.id !== details.id).slice(2, 7));
+          } catch(e) {}
         }
       } catch (err: any) {
         console.error("Playback entitlement check failed:", err);

@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 import { Play, Plus, ThumbsUp, ChevronDown, Check } from "lucide-react";
 import Link from "next/link";
-import { Movie } from "@/lib/mockData";
+import { Movie } from "@/lib/api";
 import { api } from "@/lib/api";
 
 interface MovieCardProps {

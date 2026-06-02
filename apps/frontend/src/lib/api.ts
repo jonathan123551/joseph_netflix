@@ -1,4 +1,20 @@
-import { Movie } from "./mockData";
+export interface Movie {
+  id: string;
+  title: string;
+  description: string;
+  posterUrl: string;
+  bannerUrl: string;
+  trailerUrl: string;
+  videoUrl?: string;
+  rating: string;
+  duration: string;
+  year: number;
+  rentPrice: number;
+  buyPrice: number;
+  director?: string;
+  cast?: string[];
+  genres?: string[];
+}
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-1871f.up.railway.app';
 

@@ -4,8 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { CinematicButton } from "@/components/ui/CinematicButton";
-import { featuredMovie } from "@/lib/mockData";
-import { CheckCircle2, Film, ShieldCheck, HelpCircle, AlertCircle } from "lucide-react";
+import { Film, ShieldCheck, HelpCircle, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function RegisterPage() {
@@ -55,9 +54,9 @@ export default function RegisterPage() {
           {/* Background image inside side card */}
           <div className="absolute inset-0 z-0">
             <img 
-              src={featuredMovie.bannerUrl} 
-              alt="The Chosen Banner" 
-              className="w-full h-full object-cover opacity-35"
+              src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1920&h=1080" 
+              alt="Background" 
+              className="w-full h-full object-cover opacity-30 pointer-events-none"
             />
             <div className="absolute inset-0 bg-[#030306]/75" />
             <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#030306]/90" />

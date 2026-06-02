@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { CinematicButton } from "@/components/ui/CinematicButton";
-import { featuredMovie } from "@/lib/mockData";
 import { Film, ShieldCheck, AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -41,7 +40,7 @@ export default function LoginPage() {
       {/* Background Cinematic Canvas */}
       <div className="absolute inset-0 z-0">
         <img 
-          src={featuredMovie.bannerUrl} 
+          src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1920&h=1080" 
           alt="Background" 
           className="w-full h-full object-cover opacity-30 pointer-events-none"
         />

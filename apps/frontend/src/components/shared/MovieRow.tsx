@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { MovieCard } from "./MovieCard";
-import type { Movie } from "@/lib/mockData";
+import { Movie } from "@/lib/api";
 
 interface MovieRowProps {
   title: string;

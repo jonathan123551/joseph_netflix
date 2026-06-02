@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Play, Pause, RotateCcw, Volume2, VolumeX, Maximize, Minimize, Settings, SkipForward, ArrowLeft } from "lucide-react";
 import { api } from "@/lib/api";
-import { Movie } from "@/lib/mockData";
+import { Movie } from "@/lib/api";
 
 interface CinematicPlayerProps {
   movie: Movie;

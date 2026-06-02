@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { History, Heart, HeartHandshake, Film, Sparkles, User, Award, LogOut } from "lucide-react";
-import { mockMovies, Movie } from "@/lib/mockData";
+import { Movie } from "@/lib/api";
 import { MovieRow } from "@/components/shared/MovieRow";
 import { CinematicButton } from "@/components/ui/CinematicButton";
 import { useAuth } from "@/context/AuthContext";
@@ -219,7 +219,7 @@ export default function DashboardPage() {
           <section className="-mx-4 md:-mx-8">
             <MovieRow 
               title="My Purchased Presentations" 
-              movies={purchasedMovies.length > 0 ? purchasedMovies : mockMovies.filter(m => m.year === 2023)} 
+              movies={purchasedMovies} 
             />
           </section>
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MovieCard } from "@/components/shared/MovieCard";
 import { api } from "@/lib/api";
-import { Movie, mockMovies } from "@/lib/mockData";
+import { Movie } from "@/lib/api";
 import { Film, PlayCircle, Loader2 } from "lucide-react";
 
 export default function MyListPage() {
@@ -24,19 +24,13 @@ export default function MyListPage() {
         if (favData.length > 0) {
           setFavorites(favData);
         } else {
-          // Fallback to mock data for presentation
-          setFavorites(mockMovies.slice(0, 3));
+          setFavorites([]);
         }
 
         if (historyData.length > 0) {
-          // map history data to mock movies
-          const historyMovies = historyData.map((h: any) => {
-            const m = mockMovies.find(m => m.id === h.movieId);
-            return m ? { ...m, progress: h.progressSecs } : null;
-          }).filter(Boolean);
-          setContinueWatching(historyMovies);
+          setContinueWatching(historyData);
         } else {
-          setContinueWatching(mockMovies.slice(2, 4));
+          setContinueWatching([]);
         }
       } catch (err) {
         console.error("Failed to load my-list data", err);
@@ -114,13 +108,6 @@ export default function MyListPage() {
                       transition={{ duration: 0.5, delay: index * 0.1 }}
                     >
                       <MovieCard movie={movie} />
-                      {/* Fake Progress Bar */}
-                      <div className="w-full h-1 bg-white/10 mt-2 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-gold-400 rounded-full" 
-                          style={{ width: `${Math.random() * 60 + 20}%` }} 
-                        />
-                      </div>
                     </motion.div>
                   ))}
                 </div>
