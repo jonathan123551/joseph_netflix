@@ -8,10 +8,12 @@ import { CinematicButton } from "@/components/ui/CinematicButton";
 import { useAuth } from "@/context/AuthContext";
 import { api, UserProfile, Contribution } from "@/lib/api";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
+  const router = useRouter();
   const [profileStats, setProfileStats] = useState<UserProfile>({
     name: "John Doe",
     email: "guest@josephfilms.com",
@@ -24,6 +26,12 @@ export default function DashboardPage() {
   const [favorites, setFavorites] = useState<Movie[]>([]);
   const [continueWatching, setContinueWatching] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login");
+    }
+  }, [authLoading, user, router]);
 
   useEffect(() => {
     async function loadDashboardData() {
