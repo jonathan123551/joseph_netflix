@@ -23,20 +23,36 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  private setCookies(res: Response, accessToken: string, refreshToken: string) {
+  private cookieBaseOptions() {
     const isProduction = process.env.NODE_ENV === 'production';
-    res.cookie('accessToken', accessToken, {
+    // Frontend and backend are served from separate *.up.railway.app subdomains,
+    // which the public suffix list treats as cross-site. Cross-site cookies must
+    // use SameSite=None; Secure so the browser sends them on frontend->backend
+    // requests. Locally (http://localhost) Secure cookies can't be set, so fall
+    // back to Lax without Secure.
+    return {
       httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
+      secure: isProduction,
+      sameSite: isProduction ? ('none' as const) : ('lax' as const),
+    };
+  }
+
+  private setCookies(res: Response, accessToken: string, refreshToken: string) {
+    const base = this.cookieBaseOptions();
+    res.cookie('accessToken', accessToken, {
+      ...base,
       maxAge: 15 * 60 * 1000, // 15 minutes
     });
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
+      ...base,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
+  }
+
+  private clearAuthCookies(res: Response) {
+    const base = this.cookieBaseOptions();
+    res.clearCookie('accessToken', base);
+    res.clearCookie('refreshToken', base);
   }
 
   @UseGuards(ThrottlerGuard)
@@ -111,8 +127,7 @@ export class AuthController {
   ) {
     const refreshToken = req.cookies?.refreshToken;
     await this.authService.logout(refreshToken);
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
+    this.clearAuthCookies(res);
     return { message: 'Logged out successfully' };
   }
 
@@ -127,8 +142,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     await this.authService.logoutAll(user.sub);
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
+    this.clearAuthCookies(res);
     return { message: 'Logged out from all devices successfully' };
   }
   
