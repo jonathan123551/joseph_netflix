@@ -128,6 +128,17 @@ export function Navbar() {
                         <User className="w-4 h-4 text-gold-400" />
                         Switch Account
                       </Link>
+                      
+                      {user?.role === "ADMIN" && (
+                        <Link 
+                          href="/admin" 
+                          onClick={() => setIsProfileOpen(false)}
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                        >
+                          <Compass className="w-4 h-4 text-gold-400" />
+                          Admin Panel
+                        </Link>
+                      )}
                       <div className="border-t border-white/5 mt-1 pt-1">
                         <button 
                           onClick={() => {

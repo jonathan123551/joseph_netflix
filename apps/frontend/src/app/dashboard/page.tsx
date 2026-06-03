@@ -159,9 +159,12 @@ export default function DashboardPage() {
             </h2>
             
             {continueWatching.length === 0 && (
-              <p className="text-white/40 text-sm font-light">
-                Nothing in progress yet. Press play on any title and it will appear here.
-              </p>
+              <div className="p-8 rounded-2xl bg-white/5 border border-white/5 text-center flex flex-col items-center justify-center">
+                <History className="w-8 h-8 text-white/20 mb-3" />
+                <p className="text-white/40 text-sm font-light">
+                  Nothing in progress yet. Your active presentations will appear here in stunning HD.
+                </p>
+              </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {continueWatching.map((movie, i) => {
@@ -231,9 +234,12 @@ export default function DashboardPage() {
             </h2>
             
             {favorites.length === 0 && (
-              <p className="text-white/40 text-sm font-light">
-                Your list is empty. Tap “Add” on any film to save it here.
-              </p>
+              <div className="p-8 rounded-2xl bg-white/5 border border-white/5 text-center flex flex-col items-center justify-center">
+                <Heart className="w-8 h-8 text-white/20 mb-3" />
+                <p className="text-white/40 text-sm font-light">
+                  Your curated watchlist is empty. Tap “Add” on any masterpiece to save it here.
+                </p>
+              </div>
             )}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
               {favorites.map((movie, index) => (

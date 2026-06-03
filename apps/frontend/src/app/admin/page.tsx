@@ -54,10 +54,10 @@ export default function AdminOverviewPage() {
   }, []);
 
   const metrics = [
-    { label: "Total Revenue", value: stats ? currency(stats.totalRevenue) : "\u2014", icon: DollarSign, color: "text-green-500" },
-    { label: "Active Users", value: stats ? stats.totalUsers.toLocaleString() : "\u2014", icon: Users, color: "text-blue-500" },
-    { label: "Total Movies", value: stats ? stats.totalMovies.toLocaleString() : "\u2014", icon: Film, color: "text-purple-500" },
-    { label: "Donations", value: stats ? currency(stats.totalDonations) : "\u2014", icon: TrendingUp, color: "text-primary" },
+    { label: "Total Revenue", value: stats ? currency(stats.totalRevenue) : "\u2014", icon: DollarSign, color: "text-gold-400", bg: "bg-gold-400/10" },
+    { label: "Active Users", value: stats ? stats.totalUsers.toLocaleString() : "\u2014", icon: Users, color: "text-blue-400", bg: "bg-blue-400/10" },
+    { label: "Total Movies", value: stats ? stats.totalMovies.toLocaleString() : "\u2014", icon: Film, color: "text-purple-400", bg: "bg-purple-400/10" },
+    { label: "Donations", value: stats ? currency(stats.totalDonations) : "\u2014", icon: TrendingUp, color: "text-emerald-400", bg: "bg-emerald-400/10" },
   ];
 
   return (
@@ -70,54 +70,58 @@ export default function AdminOverviewPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="bg-zinc-900/50 border border-white/10 rounded-xl p-6"
+            className="glass-panel border border-white/10 rounded-2xl p-6 relative overflow-hidden group hover:border-white/20 transition-all"
           >
-            <div className="flex justify-between items-start mb-4">
-              <p className="text-white/60 text-sm font-medium">{stat.label}</p>
-              <div className={`p-2 bg-white/5 rounded-md ${stat.color}`}>
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="flex justify-between items-start mb-6 relative">
+              <p className="text-white/40 text-[10px] uppercase tracking-widest font-bold">{stat.label}</p>
+              <div className={`p-2.5 rounded-xl ${stat.bg} ${stat.color} shadow-lg`}>
                 <stat.icon className="w-5 h-5" />
               </div>
             </div>
-            <h3 className="text-3xl font-bold text-white tracking-tight">{stat.value}</h3>
+            <h3 className="text-4xl font-serif font-black text-white tracking-tight relative text-glow-gold drop-shadow-md">{stat.value}</h3>
           </motion.div>
         ))}
       </div>
 
       {/* Recent Movies Table */}
-      <div className="bg-zinc-900/50 border border-white/10 rounded-xl overflow-hidden">
-        <div className="px-6 py-5 border-b border-white/10 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-white">Recent Movies</h2>
-          <Link href="/admin/movies" className="text-sm font-medium text-primary hover:underline">View All</Link>
+      <div className="glass-panel-heavy border border-white/10 rounded-3xl overflow-hidden shadow-2xl relative">
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        <div className="px-8 py-6 border-b border-white/5 flex justify-between items-center">
+          <h2 className="text-xl font-serif font-bold text-white">Recent Presentations</h2>
+          <Link href="/admin/movies" className="text-xs uppercase tracking-widest font-bold text-gold-400 hover:text-gold-300 transition-colors bg-gold-400/10 px-4 py-2 rounded-lg border border-gold-400/20">View All Library</Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-white/70">
-            <thead className="bg-white/5 text-white/90">
+            <thead className="bg-[#030306]/50 text-white/40 text-[10px] uppercase tracking-widest font-bold border-b border-white/5">
               <tr>
-                <th className="px-6 py-4 font-medium">Movie</th>
-                <th className="px-6 py-4 font-medium">Rating</th>
-                <th className="px-6 py-4 font-medium">Year</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium text-right">Actions</th>
+                <th className="px-8 py-5">Title</th>
+                <th className="px-8 py-5">Rating</th>
+                <th className="px-8 py-5">Year</th>
+                <th className="px-8 py-5">Status</th>
+                <th className="px-8 py-5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
               {movies.slice(0, 5).map((movie) => (
-                <tr key={movie.id} className="hover:bg-white/5 transition-colors">
-                  <td className="px-6 py-4 flex items-center gap-3">
-                    <img src={movie.posterUrl} alt={movie.title} className="w-10 h-14 object-cover rounded shadow" />
-                    <span className="font-medium text-white">{movie.title}</span>
+                <tr key={movie.id} className="hover:bg-white/5 transition-colors group cursor-pointer border-b border-white/5 last:border-0">
+                  <td className="px-8 py-5 flex items-center gap-4">
+                    <div className="w-12 h-16 rounded-lg overflow-hidden border border-white/10 shadow-lg group-hover:scale-105 transition-transform">
+                      <img src={movie.posterUrl} alt={movie.title} className="w-full h-full object-cover" />
+                    </div>
+                    <span className="font-bold text-white text-base font-serif">{movie.title}</span>
                   </td>
-                  <td className="px-6 py-4">{movie.rating}</td>
-                  <td className="px-6 py-4">{movie.year}</td>
-                  <td className="px-6 py-4">
+                  <td className="px-8 py-5 font-medium">{movie.rating}</td>
+                  <td className="px-8 py-5 text-white/40 font-medium">{movie.year}</td>
+                  <td className="px-8 py-5">
                     {movie.published ? (
-                      <span className="px-2 py-1 bg-green-500/10 text-green-500 text-xs rounded-full border border-green-500/20">Published</span>
+                      <span className="px-3 py-1 bg-green-500/10 text-green-400 text-[10px] uppercase tracking-wider font-bold rounded-full border border-green-500/20 shadow-[0_0_10px_rgba(34,197,94,0.1)]">Published</span>
                     ) : (
-                      <span className="px-2 py-1 bg-yellow-500/10 text-yellow-500 text-xs rounded-full border border-yellow-500/20">Draft</span>
+                      <span className="px-3 py-1 bg-yellow-500/10 text-yellow-400 text-[10px] uppercase tracking-wider font-bold rounded-full border border-yellow-500/20">Draft</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    <Link href={`/admin/movies?edit=${movie.id}`} className="text-white/40 hover:text-white transition-colors">Edit</Link>
+                  <td className="px-8 py-5 text-right">
+                    <Link href={`/admin/movies?edit=${movie.id}`} className="text-[10px] uppercase tracking-widest font-bold text-white/40 hover:text-gold-400 transition-colors">Manage</Link>
                   </td>
                 </tr>
               ))}
