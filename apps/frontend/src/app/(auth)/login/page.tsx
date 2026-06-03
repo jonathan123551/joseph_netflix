@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { CinematicButton } from "@/components/ui/CinematicButton";
-import { Film, ShieldCheck, AlertCircle } from "lucide-react";
+import { Film, ShieldCheck, AlertCircle, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
@@ -21,9 +21,9 @@ export default function LoginPage() {
     try {
       const success = await login(email, password);
       if (success) {
-        window.location.href = "/dashboard"; // Direct redirect to clear session state fully
+        window.location.href = "/dashboard";
       } else {
-        setError("Invalid email or password. Use your email to access the guest demo.");
+        setError("Invalid email or password. Please check your credentials.");
       }
     } catch (err: any) {
       setError(err.message || "Authentication service is unavailable. Please try again.");
@@ -34,120 +34,194 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center p-4 bg-[#030306]">
-      {/* Film Grain Texture */}
       <div className="grain-overlay" />
 
-      {/* Background Cinematic Canvas */}
+      {/* Cinematic Background */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1920&h=1080" 
-          alt="Background" 
-          className="w-full h-full object-cover opacity-30 pointer-events-none"
+        <img
+          src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=1920&h=1080"
+          alt="Cinema background"
+          className="w-full h-full object-cover opacity-20 pointer-events-none"
         />
-        <div className="absolute inset-0 bg-[#030306]/85 backdrop-blur-[15px]" />
+        <div className="absolute inset-0" style={{ background: 'rgba(3,3,6,0.88)' }} />
         <div className="absolute inset-0 bg-gradient-vignette" />
-        <div className="absolute inset-0 bg-gradient-hero-overlay" />
       </div>
 
-      {/* Volumetric Glow Backlights */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] radial-glow-gold rounded-full filter blur-[150px] opacity-35 mix-blend-screen pointer-events-none animate-pulse-slow" />
-      <div className="absolute bottom-10 left-10 w-[300px] h-[300px] radial-glow-blue rounded-full filter blur-[100px] opacity-10 pointer-events-none" />
+      {/* Ambient Glows */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] radial-glow-gold rounded-full filter blur-[180px] opacity-22 mix-blend-screen pointer-events-none animate-pulse-slow" />
+      <div className="absolute bottom-16 right-16 w-[280px] h-[280px] radial-glow-blue rounded-full filter blur-[100px] opacity-12 pointer-events-none" />
 
-      {/* Glassmorphic Form Card */}
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.96, y: 30 }}
+      {/* Form Card */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 32 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 w-full max-w-[480px]"
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 w-full max-w-md"
       >
-        <div className="glass-panel-heavy rounded-3xl p-8 sm:p-12 shadow-cinematic overflow-hidden relative">
-          {/* Top internal border glare highlights */}
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          
-          <div className="mb-8 text-center flex flex-col items-center">
-            <Link href="/" className="flex items-center gap-2 mb-4 group">
-              <Film className="w-5 h-5 text-gold-400 group-hover:rotate-12 transition-transform duration-300" />
-              <span className="font-serif tracking-[0.2em] font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-gold-100 via-gold-400 to-gold-600">
-                JOSEPH
-              </span>
-            </Link>
-            <h1 className="text-2xl sm:text-3xl font-serif tracking-wide font-extrabold text-white mb-2 drop-shadow-md">
-              Welcome Back
-            </h1>
-            <p className="text-white/50 text-xs sm:text-sm font-light leading-relaxed max-w-xs">
-              Access your digital library, purchases, and watchlists securely.
+        <div className="glass-divine rounded-3xl p-8 md:p-10 shadow-[0_30px_80px_rgba(0,0,0,0.75)]">
+          {/* Top gold accent line */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-px"
+            style={{ background: 'linear-gradient(to right, transparent, rgba(212,163,89,0.7), transparent)' }} />
+
+          {/* Logo */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="flex items-center gap-2 mb-1">
+              <Film className="w-5 h-5 text-gold-400" />
+              <span className="font-serif text-lg font-black tracking-[0.18em] text-shimmer">JOSEPH</span>
+              <span className="font-serif text-lg font-black tracking-wider text-white/25">·</span>
+              <span className="font-serif text-lg font-black tracking-[0.18em] text-white/40">NETFLIX</span>
+            </div>
+            <p className="text-[9px] uppercase tracking-[0.4em] font-semibold" style={{ color: 'rgba(212,163,89,0.45)' }}>
+              Christian Streaming
             </p>
           </div>
 
+          {/* Heading */}
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-serif font-bold text-white mb-2">Welcome back</h1>
+            <p className="text-white/40 text-sm">Sign in to your account to continue</p>
+          </div>
+
+          {/* Error Message */}
           {error && (
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/25 flex items-start gap-3 text-xs text-red-300"
+              initial={{ opacity: 0, y: -8, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              className="flex items-start gap-2.5 p-3.5 rounded-xl mb-6"
+              style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
             >
-              <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <span>{error}</span>
+              <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-red-400/90 leading-relaxed">{error}</p>
             </motion.div>
           )}
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 ml-1">Email Address</label>
-              <input 
-                type="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-gold-500/50 focus:border-gold-400/40 focus:bg-white/8 transition-all duration-300"
-                placeholder="email@example.com"
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 ml-1">Password</label>
-              <input 
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-gold-500/50 focus:border-gold-400/40 focus:bg-white/8 transition-all duration-300"
-                placeholder="••••••••"
-                required
-              />
-            </div>
 
-            <div className="flex items-center justify-between text-xs text-white/60 pt-1">
-              <label className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors group select-none">
-                <input 
-                  type="checkbox" 
-                  className="rounded border-white/20 bg-white/5 text-gold-500 focus:ring-gold-500/50 focus:ring-offset-0 focus:ring-transparent h-4 w-4" 
-                />
-                Remember me
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email Field */}
+            <div className="space-y-1.5">
+              <label htmlFor="login-email" className="block text-[10px] uppercase tracking-[0.2em] font-semibold text-white/45">
+                Email Address
               </label>
-              <a href="#" className="hover:text-white hover:underline transition-colors font-medium">Forgot password?</a>
+              <input
+                id="login-email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+                className="w-full px-4 py-3.5 rounded-xl text-sm text-white placeholder-white/25 outline-none transition-all duration-300"
+                style={{
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                }}
+                onFocus={e => {
+                  e.target.style.borderColor = 'rgba(212,163,89,0.45)';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(212,163,89,0.08)';
+                  e.target.style.background = 'rgba(255,255,255,0.07)';
+                }}
+                onBlur={e => {
+                  e.target.style.borderColor = 'rgba(255,255,255,0.1)';
+                  e.target.style.boxShadow = 'none';
+                  e.target.style.background = 'rgba(255,255,255,0.05)';
+                }}
+              />
             </div>
 
-            <CinematicButton 
-              type="submit" 
-              variant="gold"
-              size="lg" 
+            {/* Password Field */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label htmlFor="login-password" className="block text-[10px] uppercase tracking-[0.2em] font-semibold text-white/45">
+                  Password
+                </label>
+                <button
+                  type="button"
+                  className="text-[10px] text-gold-400/60 hover:text-gold-400 transition-colors cursor-pointer"
+                >
+                  Forgot password?
+                </button>
+              </div>
+              <div className="relative">
+                <input
+                  id="login-password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  className="w-full px-4 py-3.5 pr-12 rounded-xl text-sm text-white placeholder-white/25 outline-none transition-all duration-300"
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                  }}
+                  onFocus={e => {
+                    e.target.style.borderColor = 'rgba(212,163,89,0.45)';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(212,163,89,0.08)';
+                    e.target.style.background = 'rgba(255,255,255,0.07)';
+                  }}
+                  onBlur={e => {
+                    e.target.style.borderColor = 'rgba(255,255,255,0.1)';
+                    e.target.style.boxShadow = 'none';
+                    e.target.style.background = 'rgba(255,255,255,0.05)';
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors cursor-pointer"
+                  aria-label="Toggle password visibility"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              id="login-submit-btn"
+              type="submit"
               disabled={isSubmitting}
-              className="w-full font-bold text-sm uppercase tracking-widest mt-2 h-13 rounded-xl"
+              className="btn-cinematic w-full py-3.5 rounded-xl font-bold text-sm text-zinc-950 transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{
+                background: 'linear-gradient(135deg, #dfba73, #d4a359, #c58d41)',
+                boxShadow: '0 0 25px rgba(212,163,89,0.35), 0 4px 15px rgba(0,0,0,0.3)',
+              }}
             >
-              {isSubmitting ? "Signing In..." : "Sign In"}
-            </CinematicButton>
+              {isSubmitting ? (
+                <div className="w-4 h-4 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" />
+              ) : (
+                <>
+                  <ShieldCheck className="w-4 h-4" />
+                  Sign In
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
           </form>
 
-          {/* Secure disclaimer */}
-          <div className="mt-6 flex items-center justify-center gap-1.5 text-[10px] uppercase tracking-wider text-white/30 font-semibold">
-            <ShieldCheck className="w-3.5 h-3.5 text-gold-500/50" /> Secure Connection
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-6">
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+            <span className="text-[10px] text-white/25 font-medium">OR</span>
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
           </div>
 
-          <div className="mt-8 pt-6 border-t border-white/5 text-center text-white/40 text-xs font-medium">
-            New to Joseph Films?{" "}
-            <Link href="/register" className="text-gold-400 hover:text-gold-300 hover:underline ml-1">
-              Create a free account
+          {/* Guest Access */}
+          <button
+            id="login-guest-btn"
+            onClick={() => login("guest@josephfilms.com", "guest").then(ok => ok && (window.location.href = "/"))}
+            className="w-full py-3 rounded-xl text-sm font-medium text-white/55 hover:text-white/80 transition-all duration-200 cursor-pointer"
+            style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.03)' }}
+          >
+            Continue as Guest
+          </button>
+
+          {/* Register Link */}
+          <p className="text-center text-xs text-white/30 mt-6">
+            Don&apos;t have an account?{" "}
+            <Link href="/register" className="text-gold-400/70 hover:text-gold-400 font-semibold transition-colors">
+              Create one free
             </Link>
-          </div>
+          </p>
         </div>
       </motion.div>
     </div>
