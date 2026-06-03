@@ -30,11 +30,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const profile = await api.getProfile();
         if (profile) {
+          // /auth/me returns the JWT payload, which has no display name.
+          // Pull the name from the profile endpoint so the avatar/menu match
+          // the rest of the app; fall back to the email handle if unavailable.
+          let name: string | undefined = profile.name;
+          if (!name) {
+            try {
+              const stats = await api.getProfileStats();
+              name = stats?.name;
+            } catch {
+              // ignore — name will fall back below
+            }
+          }
+          if (!name && profile.email) {
+            name = profile.email.split("@")[0];
+          }
           setUser({
             id: profile.sub || profile.id,
             email: profile.email,
             role: profile.role,
-            name: profile.name,
+            name,
           });
         } else {
           setUser(null);

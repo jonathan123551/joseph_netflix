@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
   Play, Heart, ShoppingBag, Tv, Share2, Check,
-  Sparkles, Star, Clock, Calendar, ChevronLeft
+  Sparkles, Clock, Calendar, ChevronLeft
 } from "lucide-react";
 import { Movie } from "@/lib/api";
 import { MovieRow } from "@/components/shared/MovieRow";
@@ -170,19 +170,16 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               transition={{ delay: 0.32, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="flex items-center flex-wrap gap-4"
             >
-              {(movie as any).rating && (
-                <div className="flex items-center gap-1.5">
-                  {[1,2,3,4,5].map(star => (
-                    <Star key={star}
-                      className={`w-4 h-4 ${
-                        star <= Math.round(Number((movie as any).rating) / 2)
-                          ? 'fill-gold-400 text-gold-400'
-                          : 'text-white/20'
-                      }`}
-                    />
-                  ))}
-                  <span className="text-xs text-white/45 ml-1">{(movie as any).rating}</span>
-                </div>
+              {movie.rating && (
+                <span className="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wide text-white/80"
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.16)' }}>
+                  {movie.rating}
+                </span>
+              )}
+              {movie.genres && movie.genres[0] && (
+                <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold text-gold-400 tracking-wide glass-gold">
+                  {movie.genres[0]}
+                </span>
               )}
               {(movie as any).duration && (
                 <div className="flex items-center gap-1.5 text-white/45 text-xs">
