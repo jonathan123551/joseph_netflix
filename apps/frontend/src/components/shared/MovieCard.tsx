@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
-import { Play, Plus, ThumbsUp, ChevronDown, Check } from "lucide-react";
+import { Play, Plus, Heart, Check, Star, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Movie } from "@/lib/api";
 import { api } from "@/lib/api";
@@ -14,50 +14,61 @@ interface MovieCardProps {
 export function MovieCard({ movie }: MovieCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
+  const [isFaved, setIsFaved] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const cardRef = useRef<HTMLDivElement>(null);
-  
-  // Motion values for the 3D tilt effect
+
   const x = useMotionValue(200);
   const y = useMotionValue(100);
-  
-  // Transform values for tilt angles (rotates up to 10 degrees)
-  const rotateX = useTransform(y, [0, 200], [10, -10]);
-  const rotateY = useTransform(x, [0, 400], [-10, 10]);
-  
-  // Reflection highlights
-  const glareX = useTransform(x, [0, 400], ["0%", "100%"]);
-  const glareY = useTransform(y, [0, 200], ["0%", "100%"]);
+  const rotateX = useTransform(y, [0, 200], [7, -7]);
+  const rotateY = useTransform(x, [0, 400], [-7, 7]);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    
-    x.set(mouseX);
-    y.set(mouseY);
-  };
-
-  const handleMouseEnter = () => {
-    setIsHovered(true);
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    x.set(mx * 2);
+    y.set(my * 2);
+    setMousePos({ x: mx, y: my });
   };
 
   const handleMouseLeave = () => {
     setIsHovered(false);
-    // Reset tilt
     x.set(200);
     y.set(100);
+    setMousePos({ x: 0, y: 0 });
+  };
+
+  const handleAddToList = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const next = !isAdded;
+    setIsAdded(next);
+    try {
+      if (next) await api.addFavorite(movie.id);
+      else await api.removeFavorite(movie.id);
+    } catch {}
+  };
+
+  const handleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const next = !isFaved;
+    setIsFaved(next);
+    try {
+      if (next) await api.addFavorite(movie.id);
+    } catch {}
   };
 
   return (
     <div
       ref={cardRef}
       onMouseMove={handleMouseMove}
-      onMouseEnter={handleMouseEnter}
+      onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full aspect-[16/9] cursor-pointer perspective-1000 z-10"
+      className="relative w-full cursor-pointer"
+      style={{ aspectRatio: '2/3', perspective: '1000px' }}
     >
       <motion.div
         style={{
@@ -66,125 +77,141 @@ export function MovieCard({ movie }: MovieCardProps) {
           transformStyle: "preserve-3d",
         }}
         animate={{
-          scale: isHovered ? 1.05 : 1,
-          z: isHovered ? 40 : 0,
+          scale: isHovered ? 1.04 : 1,
+          zIndex: isHovered ? 40 : 10,
         }}
-        transition={{ type: "spring", stiffness: 350, damping: 25 }}
-        className={`relative w-full h-full rounded-2xl overflow-hidden shadow-2xl transition-shadow duration-300 ${
-          isHovered ? "shadow-[0_20px_50px_rgba(0,0,0,0.8),_0_0_30px_rgba(212,163,89,0.15)] border-white/10" : "border-white/5"
-        } border bg-zinc-950`}
+        transition={{ type: "spring", stiffness: 280, damping: 26 }}
+        className={`relative w-full h-full rounded-xl overflow-hidden border transition-shadow duration-400 bg-zinc-900 ${
+          isHovered
+            ? "shadow-[0_22px_65px_rgba(0,0,0,0.85),0_0_32px_rgba(212,163,89,0.14)] border-gold-500/22"
+            : "border-white/[0.06] shadow-[0_6px_28px_rgba(0,0,0,0.55)]"
+        }`}
       >
-        {/* Poster Image */}
+        {/* Poster */}
         <img
-          src={movie.bannerUrl}
+          src={(movie as any).thumbnailUrl || movie.bannerUrl}
           alt={movie.title}
-          className="w-full h-full object-cover select-none transition-transform duration-700 ease-out"
-          style={{
-            transform: isHovered ? "scale(1.08)" : "scale(1)",
-          }}
+          className="w-full h-full object-cover transition-transform duration-700"
+          style={{ transform: isHovered ? 'scale(1.07)' : 'scale(1)' }}
           loading="lazy"
         />
 
-        {/* Ambient Dark Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent pointer-events-none" />
-        
-        {/* Dynamic Interactive Light Glare Effect */}
-        <motion.div
-          className="absolute inset-0 pointer-events-none opacity-0 select-none bg-[radial-gradient(circle_at_var(--glare-x)_var(--glare-y),rgba(255,255,255,0.15)_0%,transparent_50%)]"
-          style={{
-            opacity: isHovered ? 1 : 0,
-            // CSS custom variables hooked into motion transforms
-            "--glare-x": glareX,
-            "--glare-y": glareY,
-          } as any}
-          transition={{ duration: 0.2 }}
-        />
-
-        {/* Cinematic Title & Meta overlay (Visible always at bottom, cleaner design) */}
-        <div className={`absolute bottom-0 left-0 right-0 p-4 transition-all duration-300 ${
-          isHovered ? "bg-zinc-950/90 backdrop-blur-md translate-y-0" : "bg-gradient-to-t from-zinc-950 to-transparent"
-        }`}>
-          <h3 className="text-white font-serif tracking-wide text-sm md:text-base font-bold line-clamp-1 text-glow">
-            {movie.title}
-          </h3>
-          
-          <div className="flex items-center gap-2 mt-1.5 text-[10px] font-medium text-white/70">
-            <span className="text-gold-400 font-semibold">{movie.year}</span>
-            <span className="w-1 h-1 rounded-full bg-white/20" />
-            <span className="border border-white/20 px-1 py-0.2 rounded-[3px] text-[9px] scale-90 origin-left text-white/90">
-              {movie.rating}
-            </span>
-            <span className="w-1 h-1 rounded-full bg-white/20" />
-            <span>{movie.duration}</span>
+        {/* Cross badge */}
+        <div className="absolute top-2 right-2 transition-opacity duration-300"
+          style={{ opacity: isHovered ? 0.65 : 0.3 }}>
+          <div className="w-4 h-4 relative flex items-center justify-center">
+            <div className="absolute w-[1.5px] h-4 rounded-full"
+              style={{ background: 'linear-gradient(to bottom, #ebd19b, #d4a359)' }} />
+            <div className="absolute w-2.5 h-[1.5px] rounded-full"
+              style={{ background: 'linear-gradient(to right, #ebd19b, #d4a359)', top: '27%' }} />
           </div>
+        </div>
 
-          {/* Interactive options expanded on hover */}
-          <AnimatePresence>
-            {isHovered && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="mt-3.5 pt-3 border-t border-white/5 flex items-center justify-between"
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: 'linear-gradient(to top, rgba(3,3,6,0.92) 0%, rgba(3,3,6,0.35) 45%, transparent 100%)' }} />
+
+        {/* Bottom info */}
+        <div className="absolute bottom-0 left-0 right-0 p-3">
+          <AnimatePresence mode="wait">
+            {!isHovered ? (
+              <motion.p
+                key="title"
+                initial={false}
+                exit={{ opacity: 0, y: 4 }}
+                transition={{ duration: 0.15 }}
+                className="text-[11px] font-semibold text-white/75 line-clamp-2 leading-snug"
               >
-                <div className="flex items-center gap-2">
-                  <Link href={`/movie/${movie.id}`} className="flex-shrink-0">
-                    <motion.button 
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="w-7 h-7 rounded-full bg-white flex items-center justify-center hover:bg-gold-300 transition-colors shadow-lg cursor-pointer"
-                    >
-                      <Play className="w-3.5 h-3.5 text-zinc-950 fill-zinc-950 ml-0.5" />
-                    </motion.button>
-                  </Link>
-                  <motion.button 
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      const nextState = !isAdded;
-                      setIsAdded(nextState);
-                      try {
-                        if (nextState) {
-                          await api.addFavorite(movie.id);
-                        } else {
-                          await api.removeFavorite(movie.id);
-                        }
-                      } catch (err) {
-                        setIsAdded(!nextState);
-                        console.error("Failed to toggle favorite", err);
-                      }
-                    }}
-                    className="w-7 h-7 rounded-full border border-white/20 bg-white/5 flex items-center justify-center hover:border-white transition-colors cursor-pointer"
-                  >
-                    {isAdded ? (
-                      <Check className="w-3.5 h-3.5 text-gold-400" />
-                    ) : (
-                      <Plus className="w-3.5 h-3.5 text-white/80" />
-                    )}
-                  </motion.button>
-                  <motion.button 
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="w-7 h-7 rounded-full border border-white/20 bg-white/5 flex items-center justify-center hover:border-white transition-colors cursor-pointer"
-                  >
-                    <ThumbsUp className="w-3 h-3 text-white/80" />
-                  </motion.button>
+                {movie.title}
+              </motion.p>
+            ) : (
+              <motion.div
+                key="overlay"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                className="space-y-2"
+              >
+                <p className="text-xs font-bold text-white line-clamp-2 leading-snug">{movie.title}</p>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {(movie as any).year && (
+                    <span className="text-[9px] text-white/38 font-medium">{(movie as any).year}</span>
+                  )}
+                  {(movie as any).genre && (
+                    <span className="px-1.5 py-px rounded text-[8px] font-semibold text-gold-400/80"
+                      style={{ background: 'rgba(212,163,89,0.1)', border: '1px solid rgba(212,163,89,0.18)' }}>
+                      {(movie as any).genre}
+                    </span>
+                  )}
+                  {(movie as any).rating && (
+                    <div className="flex items-center gap-0.5">
+                      <Star className="w-2.5 h-2.5 fill-gold-400 text-gold-400" />
+                      <span className="text-[9px] text-white/38">{(movie as any).rating}</span>
+                    </div>
+                  )}
                 </div>
-                
-                <Link href={`/movie/${movie.id}`}>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    className="flex items-center gap-1 text-[9px] uppercase tracking-widest text-gold-400 hover:text-white font-bold transition-colors cursor-pointer"
+                <div className="flex items-center gap-1.5 pt-0.5">
+                  <Link href={`/watch/${movie.id}`} onClick={e => e.stopPropagation()}>
+                    <button
+                      id={`card-play-${movie.id}`}
+                      className="flex items-center justify-center w-7 h-7 rounded-full cursor-pointer transition-colors"
+                      style={{ background: 'white' }}
+                      aria-label={`Play ${movie.title}`}
+                    >
+                      <Play className="w-3 h-3 fill-zinc-900 text-zinc-900" />
+                    </button>
+                  </Link>
+                  <button
+                    id={`card-add-${movie.id}`}
+                    onClick={handleAddToList}
+                    className="flex items-center justify-center w-7 h-7 rounded-full border transition-all duration-200 cursor-pointer"
+                    style={{
+                      borderColor: isAdded ? 'rgba(212,163,89,0.7)' : 'rgba(255,255,255,0.28)',
+                      background: isAdded ? 'rgba(212,163,89,0.12)' : 'transparent',
+                      color: isAdded ? '#dfba73' : 'rgba(255,255,255,0.55)',
+                    }}
+                    aria-label={isAdded ? 'Remove from list' : 'Add to list'}
                   >
-                    Details <ChevronDown className="w-3 h-3" />
-                  </motion.button>
-                </Link>
+                    {isAdded ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                  </button>
+                  <button
+                    id={`card-fav-${movie.id}`}
+                    onClick={handleFavorite}
+                    className="flex items-center justify-center w-7 h-7 rounded-full border transition-all duration-200 cursor-pointer"
+                    style={{
+                      borderColor: isFaved ? 'rgba(248,113,113,0.6)' : 'rgba(255,255,255,0.28)',
+                      background: isFaved ? 'rgba(248,113,113,0.1)' : 'transparent',
+                      color: isFaved ? 'rgba(248,113,113,0.9)' : 'rgba(255,255,255,0.55)',
+                    }}
+                    aria-label={isFaved ? 'Remove from favorites' : 'Add to favorites'}
+                  >
+                    <Heart className={`w-3 h-3 ${isFaved ? 'fill-current' : ''}`} />
+                  </button>
+                  <Link href={`/movie/${movie.id}`} onClick={e => e.stopPropagation()} className="ml-auto">
+                    <button
+                      id={`card-info-${movie.id}`}
+                      className="flex items-center justify-center w-7 h-7 rounded-full border border-white/18 text-white/40 hover:text-white hover:border-white/40 transition-all cursor-pointer"
+                      aria-label={`More info about ${movie.title}`}
+                    >
+                      <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </Link>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
+
+        {/* Glare Reflection */}
+        {isHovered && mousePos.x > 0 && (
+          <div
+            className="absolute inset-0 pointer-events-none rounded-xl"
+            style={{
+              background: `radial-gradient(circle at ${mousePos.x}px ${mousePos.y}px, rgba(255,255,255,0.07) 0%, transparent 55%)`,
+            }}
+          />
+        )}
       </motion.div>
     </div>
   );

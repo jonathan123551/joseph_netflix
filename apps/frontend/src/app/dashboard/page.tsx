@@ -1,15 +1,56 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { History, Heart, HeartHandshake, Film, Sparkles, User, Award, LogOut } from "lucide-react";
+import {
+  History, Heart, Film, Sparkles, LogOut,
+  Award, TrendingUp, BookOpen, ChevronRight
+} from "lucide-react";
 import { Movie } from "@/lib/api";
 import { MovieRow } from "@/components/shared/MovieRow";
-import { CinematicButton } from "@/components/ui/CinematicButton";
 import { useAuth } from "@/context/AuthContext";
 import { api, UserProfile, Contribution } from "@/lib/api";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  color,
+  delay,
+}: {
+  icon: any;
+  label: string;
+  value: string | number;
+  color: string;
+  delay: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      className="glass-divine rounded-2xl p-5 relative overflow-hidden group hover:border-gold-500/25 transition-all duration-300"
+    >
+      <div
+        className="absolute top-0 left-0 right-0 h-px opacity-60"
+        style={{ background: `linear-gradient(to right, transparent, ${color}, transparent)` }}
+      />
+      <div className="flex items-start justify-between mb-3">
+        <div
+          className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: `${color}18`, border: `1px solid ${color}30` }}
+        >
+          <Icon className="w-4 h-4" style={{ color }} />
+        </div>
+        <ChevronRight className="w-4 h-4 text-white/15 group-hover:text-white/30 transition-colors" />
+      </div>
+      <p className="text-2xl font-bold text-white font-display mb-0.5">{value}</p>
+      <p className="text-[11px] text-white/40 font-medium">{label}</p>
+    </motion.div>
+  );
+}
 
 export default function DashboardPage() {
   const { user, loading: authLoading, logout } = useAuth();
@@ -19,7 +60,7 @@ export default function DashboardPage() {
     email: "guest@josephfilms.com",
     role: "USER",
     purchasedCount: 2,
-    totalDonations: 150.00
+    totalDonations: 150.0,
   });
   const [purchasedMovies, setPurchasedMovies] = useState<Movie[]>([]);
   const [contributions, setContributions] = useState<Contribution[]>([]);
@@ -28,9 +69,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace("/login");
-    }
+    if (!authLoading && !user) router.replace("/login");
   }, [authLoading, user, router]);
 
   useEffect(() => {
@@ -49,7 +88,7 @@ export default function DashboardPage() {
         if (favs) setFavorites(favs as Movie[]);
         if (history) setContinueWatching(history);
       } catch (err) {
-        console.warn("Could not load dashboard data from API, using default mock presets.");
+        console.warn("Could not load dashboard data, using defaults.");
       } finally {
         setLoading(false);
       }
@@ -63,259 +102,265 @@ export default function DashboardPage() {
   };
 
   const userInitials = profileStats.name
-    ? profileStats.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
+    ? profileStats.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
     : "JD";
 
   return (
-    <div className="min-h-screen bg-[#030306] pt-32 pb-24 overflow-x-hidden relative">
-      {/* Cinematic Film Grain */}
+    <div className="min-h-screen bg-[#030306] pt-28 pb-24 overflow-x-hidden relative">
       <div className="grain-overlay" />
 
-      {/* Volumetric glow backdrop */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] radial-glow-gold rounded-full filter blur-[150px] opacity-15 pointer-events-none" />
-      <div className="absolute top-1/3 left-0 w-[500px] h-[500px] radial-glow-blue rounded-full filter blur-[150px] opacity-10 pointer-events-none" />
+      {/* Ambient Glows */}
+      <div className="absolute top-0 right-0 w-[700px] h-[700px] radial-glow-gold rounded-full filter blur-[200px] opacity-10 pointer-events-none" />
+      <div className="absolute top-1/2 left-0 w-[500px] h-[500px] radial-glow-blue rounded-full filter blur-[180px] opacity-8 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Premium Profile Billboard */}
-        <motion.div 
+
+        {/* ── Profile Billboard ── */}
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-          className="relative mb-16 rounded-[2.5rem] overflow-hidden border border-white/10 glass-panel-heavy shadow-cinematic p-8 md:p-12 flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12"
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+          className="relative mb-10 rounded-[2rem] overflow-hidden glass-divine shadow-[0_30px_80px_rgba(0,0,0,0.6)] p-7 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-7 md:gap-10"
         >
-          {/* Subtle inside gradient background */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-gold-500/5 via-transparent to-white/5 pointer-events-none" />
+          {/* Inside gradient */}
+          <div className="absolute inset-0 pointer-events-none"
+            style={{ background: 'linear-gradient(135deg, rgba(212,163,89,0.06) 0%, transparent 60%, rgba(255,255,255,0.02) 100%)' }} />
 
-          {/* Profile Circle Accent */}
+          {/* Avatar */}
           <div className="relative flex-shrink-0">
-            <div className="w-28 h-28 md:w-32 md:h-32 rounded-full bg-gradient-to-tr from-gold-600 via-gold-500 to-gold-300 flex items-center justify-center border-4 border-zinc-950 shadow-[0_0_40px_rgba(212,163,89,0.25)] overflow-hidden">
+            <div
+              className="w-24 h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center border-4 border-[#030306]"
+              style={{
+                background: 'linear-gradient(135deg, #a77030, #d4a359, #fbf6eb)',
+                boxShadow: '0 0 50px rgba(212,163,89,0.3), 0 0 100px rgba(212,163,89,0.1)'
+              }}
+            >
               <span className="text-3xl md:text-4xl font-serif font-black text-zinc-950 tracking-tighter">
                 {userInitials}
               </span>
             </div>
-            {/* Patron badge */}
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gold-500 border border-gold-400 text-[9px] uppercase tracking-widest font-black text-zinc-950 flex items-center gap-1 shadow-lg">
-              <Award className="w-3 h-3" /> Patron
+            {/* Animated ring */}
+            <div
+              className="absolute -inset-1 rounded-full opacity-40 animate-spin-slow"
+              style={{
+                background: 'conic-gradient(from 0deg, rgba(212,163,89,0.8), transparent, rgba(212,163,89,0.4), transparent)',
+                mask: 'radial-gradient(farthest-side, transparent calc(100% - 2px), white calc(100% - 2px))'
+              }}
+            />
+            {/* Role badge */}
+            <div
+              className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide whitespace-nowrap"
+              style={{ background: 'linear-gradient(135deg, #d4a359, #a77030)', color: '#030306' }}
+            >
+              {profileStats.role === 'ADMIN' ? 'Admin' : 'Patron'}
             </div>
           </div>
-          
-          {/* User Bio and Stats */}
-          <div className="text-center md:text-left flex-grow">
-            <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-white/5 border border-white/10 text-[9px] font-bold uppercase tracking-[0.2em] text-white/50 mb-3">
-              <Sparkles className="w-3 h-3 text-gold-400" /> Premium Account Space
-            </div>
-            
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-3xl md:text-4xl font-serif tracking-wide font-extrabold text-white mb-2 leading-tight">
-                  {profileStats.name || "Patron Member"}
-                </h1>
-                <p className="text-white/40 text-xs md:text-sm font-light mb-6">
-                  {profileStats.email} • Member since 2024
-                </p>
-              </div>
 
-              <CinematicButton 
-                variant="outline" 
-                size="sm" 
+          {/* Info */}
+          <div className="flex-1 text-center md:text-left">
+            <motion.h1
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="text-2xl md:text-3xl font-serif font-black text-white mb-1"
+            >
+              {profileStats.name}
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-white/40 text-sm mb-6"
+            >
+              {profileStats.email}
+            </motion.p>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-3 flex-wrap justify-center md:justify-start">
+              <Link href="/donate">
+                <button
+                  id="dashboard-donate-btn"
+                  className="btn-cinematic flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold text-zinc-950 cursor-pointer"
+                  style={{
+                    background: 'linear-gradient(135deg, #dfba73, #d4a359)',
+                    boxShadow: '0 0 20px rgba(212,163,89,0.3)'
+                  }}
+                >
+                  <Heart className="w-3.5 h-3.5" /> Support Ministry
+                </button>
+              </Link>
+              <Link href="/profile">
+                <button
+                  id="dashboard-edit-btn"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold text-white/65 hover:text-white transition-all cursor-pointer glass-panel"
+                >
+                  Edit Profile
+                </button>
+              </Link>
+              <button
+                id="dashboard-logout-btn"
                 onClick={handleLogout}
-                className="gap-2 self-center sm:self-start border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-400/50"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold text-red-400/65 hover:text-red-400 transition-all cursor-pointer glass-panel"
               >
-                <LogOut className="w-3.5 h-3.5" />
-                Sign Out
-              </CinematicButton>
+                <LogOut className="w-3.5 h-3.5" /> Sign Out
+              </button>
             </div>
-            
-            {/* Quick stats with gold accent */}
-            <div className="flex flex-wrap justify-center md:justify-start gap-4">
-              <div className="px-5 py-3 rounded-xl bg-white/5 border border-white/5 flex items-center gap-3">
-                <Film className="w-4 h-4 text-gold-400" />
-                <div className="text-left">
-                  <p className="text-[9px] font-bold uppercase tracking-wider text-white/40">Purchased Titles</p>
-                  <p className="text-lg font-bold text-white">{profileStats.purchasedCount} Movies</p>
-                </div>
-              </div>
-              
-              <div className="px-5 py-3 rounded-xl bg-white/5 border border-white/5 flex items-center gap-3">
-                <HeartHandshake className="w-4 h-4 text-gold-400" />
-                <div className="text-left">
-                  <p className="text-[9px] font-bold uppercase tracking-wider text-white/40">Ministry Support</p>
-                  <p className="text-lg font-bold text-white">${profileStats.totalDonations.toFixed(2)} donated</p>
-                </div>
-              </div>
-            </div>
+          </div>
+
+          {/* Bible Quote */}
+          <div className="hidden lg:block flex-shrink-0 max-w-xs text-right">
+            <blockquote
+              className="text-xs italic leading-relaxed"
+              style={{ color: 'rgba(212,163,89,0.5)' }}
+            >
+              &ldquo;I am the way, the truth, and the life.&rdquo;
+            </blockquote>
+            <cite className="text-[10px] text-white/25 not-italic">John 14:6</cite>
           </div>
         </motion.div>
 
-        {/* Dashboard Grid / Rows */}
-        <div className="space-y-16">
-          
-          {/* Continue Watching Section */}
-          <section className="space-y-6">
-            <h2 className="text-lg md:text-xl font-display font-semibold tracking-wider text-white/80 flex items-center gap-3">
-              <span className="w-1.5 h-6 bg-gold-500 rounded-full" />
-              Continue Watching
-            </h2>
-            
-            {continueWatching.length === 0 && (
-              <div className="p-8 rounded-2xl bg-white/5 border border-white/5 text-center flex flex-col items-center justify-center">
-                <History className="w-8 h-8 text-white/20 mb-3" />
-                <p className="text-white/40 text-sm font-light">
-                  Nothing in progress yet. Your active presentations will appear here in stunning HD.
-                </p>
-              </div>
-            )}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {continueWatching.map((movie, i) => {
-                let progressPercent = 75;
-                if (movie.progressSecs && movie.duration) {
-                  const mins = parseInt(movie.duration) || 120;
-                  const totalSecs = mins * 60;
-                  progressPercent = Math.min(100, Math.max(0, (movie.progressSecs / totalSecs) * 100));
-                }
+        {/* ── Stats Grid ── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+          <StatCard
+            icon={Film}
+            label="Movies Purchased"
+            value={profileStats.purchasedCount ?? 0}
+            color="#d4a359"
+            delay={0.1}
+          />
+          <StatCard
+            icon={Heart}
+            label="Total Support"
+            value={`$${(profileStats.totalDonations ?? 0).toFixed(0)}`}
+            color="#f87171"
+            delay={0.18}
+          />
+          <StatCard
+            icon={Sparkles}
+            label="Favorites"
+            value={favorites.length}
+            color="#a78bfa"
+            delay={0.26}
+          />
+          <StatCard
+            icon={TrendingUp}
+            label="Continue Watching"
+            value={continueWatching.length}
+            color="#34d399"
+            delay={0.34}
+          />
+        </div>
 
-                return (
-                  <Link href={`/movie/${movie.id}`} key={movie.id} className="block">
-                    <motion.div 
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.8, delay: i * 0.15 }}
-                      className="group relative rounded-2xl overflow-hidden border border-white/10 cursor-pointer bg-zinc-950/60 shadow-lg"
-                    >
-                      <div className="aspect-video relative">
-                        <img 
-                          src={movie.bannerUrl} 
-                          alt={movie.title} 
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent" />
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-                          <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 group-hover:scale-110 transition-transform">
-                            <History className="w-6 h-6 text-white ml-0.5" />
-                          </div>
-                        </div>
-                        <div className="absolute bottom-4 left-6 right-6">
-                          <span className="text-[9px] uppercase tracking-widest font-bold text-gold-400">
-                            {movie.remainingLabel || "45 Minutes Remaining"}
-                          </span>
-                          <h3 className="text-white font-serif font-bold text-lg md:text-xl drop-shadow-md mt-1">{movie.title}</h3>
-                        </div>
-                      </div>
-                      {/* Premium red-gold stream bar indicator */}
-                      <div className="w-full h-1 bg-zinc-900">
-                        <div 
-                          className="h-full bg-gradient-to-r from-gold-500 to-gold-400 relative"
-                          style={{ width: `${progressPercent}%` }}
-                        >
-                          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-gold-400 rounded-full shadow-[0_0_8px_rgba(212,163,89,0.8)]" />
-                        </div>
-                      </div>
-                    </motion.div>
-                  </Link>
-                );
-              })}
+        {/* ── Movie Rows ── */}
+        <div className="space-y-2">
+          {continueWatching.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <MovieRow title="Continue Watching" movies={continueWatching} />
+            </motion.div>
+          )}
+          {purchasedMovies.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.65, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <MovieRow title="My Library" movies={purchasedMovies} />
+            </motion.div>
+          )}
+          {favorites.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.65, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <MovieRow title="My Favorites" movies={favorites} />
+            </motion.div>
+          )}
+        </div>
+
+        {/* ── Contribution History ── */}
+        {contributions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-12"
+          >
+            <div className="flex items-center gap-3 mb-5 px-1">
+              <span
+                className="w-[3px] h-5 rounded-full flex-shrink-0"
+                style={{ background: 'linear-gradient(to bottom, #ebd19b, #a77030)' }}
+              />
+              <h2 className="text-base font-display font-semibold tracking-wider text-white/65">Support History</h2>
             </div>
-          </section>
-
-          {/* Purchased Content Rows */}
-          <section className="-mx-4 md:-mx-8">
-            <MovieRow 
-              title="My Purchased Presentations" 
-              movies={purchasedMovies} 
-            />
-          </section>
-
-          {/* Wishlist / My List Grid */}
-          <section className="space-y-6">
-            <h2 className="text-lg md:text-xl font-display font-semibold tracking-wider text-white/80 flex items-center gap-3">
-              <span className="w-1.5 h-6 bg-gold-500 rounded-full" />
-              Watchlist & Favorites
-            </h2>
-            
-            {favorites.length === 0 && (
-              <div className="p-8 rounded-2xl bg-white/5 border border-white/5 text-center flex flex-col items-center justify-center">
-                <Heart className="w-8 h-8 text-white/20 mb-3" />
-                <p className="text-white/40 text-sm font-light">
-                  Your curated watchlist is empty. Tap “Add” on any masterpiece to save it here.
-                </p>
-              </div>
-            )}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
-              {favorites.map((movie, index) => (
-                <motion.div 
-                  key={movie.id}
-                  whileHover={{ y: -5 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  className="relative aspect-[2/3] rounded-2xl overflow-hidden cursor-pointer group shadow-lg border border-white/5 bg-zinc-950"
+            <div className="glass-divine rounded-2xl overflow-hidden">
+              {contributions.map((contribution: Contribution, index: number) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between px-6 py-4 border-b last:border-b-0 group hover:bg-white/[0.02] transition-colors"
+                  style={{ borderColor: 'rgba(255,255,255,0.06)' }}
                 >
-                  <img 
-                    src={movie.posterUrl} 
-                    alt={movie.title} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
-                  
-                  {/* Expanded Hover Cover */}
-                  <div className="absolute inset-0 bg-[#030306]/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
-                    <h3 className="text-white font-serif font-bold text-sm leading-snug">{movie.title}</h3>
-                    <p className="text-[10px] text-gold-400 font-semibold mt-1">{movie.year}</p>
-                    
-                    <Link href={`/movie/${movie.id}`} className="mt-4">
-                      <CinematicButton variant="gold" size="sm" className="w-full text-[9px] uppercase tracking-widest py-2 h-auto rounded-lg">
-                        Details
-                      </CinematicButton>
-                    </Link>
+                  <div className="flex items-center gap-4">
+                    <div
+                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      style={{ background: 'linear-gradient(135deg, #dfba73, #a77030)', boxShadow: '0 0 8px rgba(212,163,89,0.4)' }}
+                    />
+                    <div>
+                      <p className="text-sm text-white/75 font-medium">{(contribution as any).description || "Ministry Support"}</p>
+                      <p className="text-[10px] text-white/30 mt-0.5">
+                        {(contribution as any).date ? new Date((contribution as any).date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Recent'}
+                      </p>
+                    </div>
                   </div>
-                </motion.div>
+                  <span className="text-sm font-bold text-gold-400">
+                    ${(contribution as any).amount?.toFixed(2) || '0.00'}
+                  </span>
+                </div>
               ))}
             </div>
-          </section>
+          </motion.div>
+        )}
 
-          {/* Premium Donation History - Styled as elegant Receipt Ledger */}
-          <section className="space-y-6">
-            <h2 className="text-lg md:text-xl font-display font-semibold tracking-wider text-white/80 flex items-center gap-3">
-              <span className="w-1.5 h-6 bg-gold-500 rounded-full" />
-              Patronage & Ministry Ledger
-            </h2>
-            
-            <div className="glass-panel rounded-3xl border-white/10 p-6 md:p-10 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
-              
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-white/5 pb-6 mb-6">
-                <div>
-                  <h3 className="text-white font-serif font-bold text-lg">Direct Creator Impact</h3>
-                  <p className="text-xs text-white/40 font-light mt-0.5">Your support history directly impacts Christian filmmaking ministries.</p>
-                </div>
-                <div className="mt-4 md:mt-0 text-[10px] font-bold uppercase tracking-wider text-gold-400 px-3 py-1 rounded bg-gold-500/10 border border-gold-500/20">
-                  Total Donated: ${profileStats.totalDonations.toFixed(2)}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {contributions.map((donation, i) => (
-                  <div 
-                    key={donation.id || i} 
-                    className="flex flex-col sm:flex-row justify-between sm:items-center py-4 border-b border-white/5 last:border-0 last:pb-0"
-                  >
-                    <div>
-                      <h4 className="text-white font-medium text-sm flex items-center gap-2">
-                        {donation.org}
-                        <span className="text-[9px] uppercase tracking-wider font-semibold text-white/30">{donation.invoice}</span>
-                      </h4>
-                      <p className="text-xs text-white/50 font-light mt-0.5">{donation.campaign} • {donation.date}</p>
-                    </div>
-                    <div className="mt-2 sm:mt-0 text-right">
-                      <div className="text-sm font-bold text-gold-400 text-glow-gold">{donation.amount}</div>
-                      <div className="text-[8px] font-bold text-green-500/80 uppercase tracking-widest mt-0.5">Disbursed</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+        {/* ── Empty State ── */}
+        {!loading && purchasedMovies.length === 0 && favorites.length === 0 && continueWatching.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            className="text-center py-20"
+          >
+            <div
+              className="w-16 h-16 rounded-full mx-auto mb-5 flex items-center justify-center"
+              style={{ background: 'rgba(212,163,89,0.08)', border: '1px solid rgba(212,163,89,0.15)' }}
+            >
+              <BookOpen className="w-7 h-7 text-gold-400/50" />
             </div>
-          </section>
-
-        </div>
+            <h3 className="text-lg font-serif font-bold text-white/60 mb-2">Your library is empty</h3>
+            <p className="text-sm text-white/30 mb-6">Explore our collection of inspiring Christian films</p>
+            <Link href="/">
+              <button
+                id="dashboard-browse-btn"
+                className="btn-cinematic px-7 py-3 rounded-full text-sm font-bold text-zinc-950 cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #dfba73, #d4a359)', boxShadow: '0 0 20px rgba(212,163,89,0.3)' }}
+              >
+                Browse Films
+              </button>
+            </Link>
+          </motion.div>
+        )}
       </div>
     </div>
   );
