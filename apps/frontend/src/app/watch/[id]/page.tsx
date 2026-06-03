@@ -31,10 +31,10 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
             setRecommended(allMovies.filter((m: Movie) => m.id !== details.id).slice(2, 7));
           } catch(e) {}
         }
-      } catch (err: any) {
-        console.error("Playback entitlement check failed:", err);
-        alert(err.message || "You must purchase or rent this movie to watch it.");
-        router.push(`/movie/${movieId}`);
+      } catch {
+        // No entitlement yet — send the viewer to the film page where the
+        // rent/buy options are clearly presented (instead of a raw alert).
+        router.replace(`/movie/${movieId}?locked=1`);
       } finally {
         setLoading(false);
       }

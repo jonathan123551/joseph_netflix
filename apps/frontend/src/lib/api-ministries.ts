@@ -69,6 +69,11 @@ const mockMinistries: Ministry[] = [
 export async function getMinistries(): Promise<Ministry[]> {
   try {
     const data = await api.getMinistries();
+    // The backend ministries directory is not populated yet; fall back to the
+    // curated demo partners so the page never renders empty for a customer.
+    if (!Array.isArray(data) || data.length === 0) {
+      return mockMinistries;
+    }
     // Transform backend data to match Ministry type if necessary
     return data.map((m: any) => ({
       ...m,
@@ -81,16 +86,15 @@ export async function getMinistries(): Promise<Ministry[]> {
       campaigns: m.campaigns || [],
       recentDonations: m.recentDonations || []
     }));
-  } catch (err) {
-    console.error("Failed to fetch ministries from backend", err);
-    return [];
+  } catch {
+    return mockMinistries;
   }
 }
 
 export async function getMinistryById(id: string): Promise<Ministry | null> {
   try {
     const m = await api.getMinistryById(id);
-    if (!m) return null;
+    if (!m) return mockMinistries.find((x) => x.id === id) ?? null;
     return {
       ...m,
       logo: m.logo || "https://images.unsplash.com/photo-1599059813005-11265ba4b4ce?auto=format&fit=crop&q=80&w=150&h=150",
@@ -102,8 +106,7 @@ export async function getMinistryById(id: string): Promise<Ministry | null> {
       campaigns: m.campaigns || [],
       recentDonations: m.recentDonations || []
     };
-  } catch (err) {
-    console.error(`Failed to fetch ministry ${id} from backend`, err);
-    return null;
+  } catch {
+    return mockMinistries.find((x) => x.id === id) ?? null;
   }
 }

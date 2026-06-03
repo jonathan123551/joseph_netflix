@@ -188,8 +188,17 @@ class ApiClient {
     return this.request<AdminStats>('/admin/stats');
   }
 
-  async getMovieCategories(): Promise<any[]> {
-    return this.request<any[]>('/movies/categories');
+  // The backend returns categories as { title, items }. The UI rows expect
+  // { title, movies }, so map and normalize here (otherwise every row renders empty).
+  async getMovieCategories(): Promise<{ title: string; movies: Movie[] }[]> {
+    const raw = await this.request<any[]>('/movies/categories');
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .map((c: any) => ({
+        title: c?.title ?? "",
+        movies: Array.isArray(c?.items) ? c.items.map(normalizeMovie) : [],
+      }))
+      .filter((c) => c.movies.length > 0);
   }
 
   async getMovieDetails(id: string): Promise<Movie> {

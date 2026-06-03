@@ -12,7 +12,30 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
+  const [isGuestLoading, setIsGuestLoading] = useState(false);
+  const { login, register } = useAuth();
+
+  const GUEST_EMAIL = "demo@josephfilms.com";
+  const GUEST_PASSWORD = "demopass123";
+
+  const handleGuest = async () => {
+    setError("");
+    setIsGuestLoading(true);
+    try {
+      // Self-healing: try to sign in, and provision the demo account if it
+      // doesn't exist yet so the guest experience always works.
+      try {
+        await login(GUEST_EMAIL, GUEST_PASSWORD);
+      } catch {
+        await register("Guest Viewer", GUEST_EMAIL, GUEST_PASSWORD);
+      }
+      window.location.href = "/";
+    } catch (err: any) {
+      setError(err.message || "Couldn't start a guest session. Please try again.");
+    } finally {
+      setIsGuestLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -208,12 +231,23 @@ export default function LoginPage() {
           {/* Guest Access */}
           <button
             id="login-guest-btn"
-            onClick={() => login("guest@josephfilms.com", "guest").then(ok => ok && (window.location.href = "/"))}
-            className="w-full py-3 rounded-xl text-sm font-medium text-white/55 hover:text-white/80 transition-all duration-200 cursor-pointer"
+            onClick={handleGuest}
+            disabled={isGuestLoading}
+            className="w-full py-3 rounded-xl text-sm font-medium text-white/55 hover:text-white/80 transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.03)' }}
           >
-            Continue as Guest
+            {isGuestLoading ? (
+              <>
+                <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white/70 rounded-full animate-spin" />
+                Starting demo…
+              </>
+            ) : (
+              "Explore as Guest"
+            )}
           </button>
+          <p className="text-center text-[10px] text-white/25 mt-2">
+            Browse the full demo library — no sign-up required.
+          </p>
 
           {/* Register Link */}
           <p className="text-center text-xs text-white/30 mt-6">

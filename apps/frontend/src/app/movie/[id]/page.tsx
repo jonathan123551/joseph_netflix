@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
   Play, Heart, ShoppingBag, Tv, Share2, Check,
-  Sparkles, Star, Clock, Calendar, ChevronLeft
+  Sparkles, Clock, Calendar, ChevronLeft, Lock, X
 } from "lucide-react";
 import { Movie } from "@/lib/api";
 import { MovieRow } from "@/components/shared/MovieRow";
@@ -22,6 +22,13 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
   const [checkoutStep, setCheckoutStep] = useState<"idle" | "donated" | "purchased" | "rented">("idle");
   const [isFavorite, setIsFavorite] = useState(false);
   const [isPlayingTrailer, setIsPlayingTrailer] = useState(false);
+  const [showLockedNote, setShowLockedNote] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("locked")) {
+      setShowLockedNote(true);
+    }
+  }, []);
 
   useEffect(() => {
     async function loadMovieData() {
@@ -130,6 +137,31 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
           </Link>
         </motion.div>
 
+        {/* Locked notice — shown when a viewer tried to watch without renting/buying */}
+        {showLockedNote && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 flex items-start gap-3 rounded-2xl p-4 pr-3"
+            style={{ background: 'rgba(212,163,89,0.08)', border: '1px solid rgba(212,163,89,0.25)' }}
+          >
+            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(212,163,89,0.15)' }}>
+              <Lock className="w-4 h-4 text-gold-400" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white">Rent or buy to start watching</p>
+              <p className="text-xs text-white/50 mt-0.5 leading-relaxed">Choose an option below to unlock instant HD streaming of this film.</p>
+            </div>
+            <button
+              onClick={() => setShowLockedNote(false)}
+              className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-colors cursor-pointer flex-shrink-0"
+              aria-label="Dismiss"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
 
           {/* ── Left Column ── */}
@@ -170,19 +202,16 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               transition={{ delay: 0.32, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="flex items-center flex-wrap gap-4"
             >
-              {(movie as any).rating && (
-                <div className="flex items-center gap-1.5">
-                  {[1,2,3,4,5].map(star => (
-                    <Star key={star}
-                      className={`w-4 h-4 ${
-                        star <= Math.round(Number((movie as any).rating) / 2)
-                          ? 'fill-gold-400 text-gold-400'
-                          : 'text-white/20'
-                      }`}
-                    />
-                  ))}
-                  <span className="text-xs text-white/45 ml-1">{(movie as any).rating}</span>
-                </div>
+              {movie.rating && (
+                <span className="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wide text-white/80"
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.16)' }}>
+                  {movie.rating}
+                </span>
+              )}
+              {movie.genres && movie.genres[0] && (
+                <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold text-gold-400 tracking-wide glass-gold">
+                  {movie.genres[0]}
+                </span>
               )}
               {(movie as any).duration && (
                 <div className="flex items-center gap-1.5 text-white/45 text-xs">
