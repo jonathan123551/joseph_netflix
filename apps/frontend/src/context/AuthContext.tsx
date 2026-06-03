@@ -7,6 +7,7 @@ interface AuthUser {
   id: string;
   email: string;
   role: string;
+  name?: string;
 }
 
 interface AuthContextType {
@@ -33,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             id: profile.sub || profile.id,
             email: profile.email,
             role: profile.role,
+            name: profile.name,
           });
         } else {
           setUser(null);
@@ -65,6 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       id: result.user.id,
       email: result.user.email,
       role: result.user.role,
+      name: result.user.name,
     });
     return true;
   };
@@ -87,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       id: result.user.id,
       email: result.user.email,
       role: result.user.role,
+      name: result.user.name,
     });
     return true;
   };
