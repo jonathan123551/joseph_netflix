@@ -1,18 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { api, UserProfile } from "@/lib/api";
 import { Movie } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import { MovieCard } from "@/components/shared/MovieCard";
 import { Settings, Clock, ShoppingBag, Tv, CreditCard, User, Bell, Shield, LogOut } from "lucide-react";
 
 export default function ProfilePage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"purchased" | "rentals" | "history" | "settings">("purchased");
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [library, setLibrary] = useState<Movie[]>([]);
   const [history, setHistory] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!authLoading && !user) router.replace("/login");
+  }, [authLoading, user, router]);
 
   useEffect(() => {
     async function loadProfile() {
@@ -22,25 +30,29 @@ export default function ProfilePage() {
           api.getMyLibrary().catch(() => []),
           api.getWatchHistory().catch(() => []),
         ]);
-        
-        setProfile(profData || {
-          name: "Faithful Viewer",
-          email: "user@josephfilms.com",
-          role: "user",
-          purchasedCount: 12,
-          totalDonations: 250,
-        });
+
+        // Use the real signed-in identity; only the aggregate stats come from
+        // the profile endpoint. No fake placeholder identity.
+        setProfile(
+          profData || {
+            name: user?.name || "",
+            email: user?.email || "",
+            role: user?.role || "USER",
+            purchasedCount: 0,
+            totalDonations: 0,
+          }
+        );
 
         setLibrary(libData.length ? libData : []);
         setHistory(histData.length ? histData : []);
       } catch (err) {
-        console.error("Failed to load profile", err);
+        console.warn("Could not load profile data.");
       } finally {
         setIsLoading(false);
       }
     }
     loadProfile();
-  }, []);
+  }, [user]);
 
   const tabs = [
     { id: "purchased", label: "Purchased", icon: ShoppingBag },
@@ -102,8 +114,8 @@ export default function ProfilePage() {
             </div>
           </div>
           <div className="text-center md:text-left flex-1">
-            <h1 className="text-3xl md:text-5xl font-serif font-bold text-white mb-2">{profile?.name}</h1>
-            <p className="text-white/50 text-sm">{profile?.email} • Member since 2024</p>
+            <h1 className="text-3xl md:text-5xl font-serif font-bold text-white mb-2">{profile?.name || user?.name || "Your Profile"}</h1>
+            <p className="text-white/50 text-sm">{profile?.email || user?.email}</p>
           </div>
           <div className="flex gap-4 w-full md:w-auto mt-6 md:mt-0">
             <div className="flex-1 md:flex-none glass-panel p-4 rounded-2xl text-center min-w-[120px]">

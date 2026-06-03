@@ -31,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark scroll-smooth">
+    <html lang="en" className="dark scroll-smooth" data-scroll-behavior="smooth">
       <body
         className={`${inter.variable} ${outfit.variable} ${cinzel.variable} antialiased min-h-screen flex flex-col font-sans bg-[#050508] text-zinc-50`}
       >

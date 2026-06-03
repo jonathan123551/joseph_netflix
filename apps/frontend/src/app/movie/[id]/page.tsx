@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
   Play, Heart, ShoppingBag, Tv, Share2, Check,
-  Sparkles, Clock, Calendar, ChevronLeft
+  Sparkles, Clock, Calendar, ChevronLeft, Lock, X
 } from "lucide-react";
 import { Movie } from "@/lib/api";
 import { MovieRow } from "@/components/shared/MovieRow";
@@ -22,6 +22,13 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
   const [checkoutStep, setCheckoutStep] = useState<"idle" | "donated" | "purchased" | "rented">("idle");
   const [isFavorite, setIsFavorite] = useState(false);
   const [isPlayingTrailer, setIsPlayingTrailer] = useState(false);
+  const [showLockedNote, setShowLockedNote] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("locked")) {
+      setShowLockedNote(true);
+    }
+  }, []);
 
   useEffect(() => {
     async function loadMovieData() {
@@ -129,6 +136,31 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
             Back to Home
           </Link>
         </motion.div>
+
+        {/* Locked notice — shown when a viewer tried to watch without renting/buying */}
+        {showLockedNote && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 flex items-start gap-3 rounded-2xl p-4 pr-3"
+            style={{ background: 'rgba(212,163,89,0.08)', border: '1px solid rgba(212,163,89,0.25)' }}
+          >
+            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(212,163,89,0.15)' }}>
+              <Lock className="w-4 h-4 text-gold-400" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-white">Rent or buy to start watching</p>
+              <p className="text-xs text-white/50 mt-0.5 leading-relaxed">Choose an option below to unlock instant HD streaming of this film.</p>
+            </div>
+            <button
+              onClick={() => setShowLockedNote(false)}
+              className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-colors cursor-pointer flex-shrink-0"
+              aria-label="Dismiss"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
 

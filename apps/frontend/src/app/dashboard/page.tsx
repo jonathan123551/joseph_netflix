@@ -56,11 +56,11 @@ export default function DashboardPage() {
   const { user, loading: authLoading, logout } = useAuth();
   const router = useRouter();
   const [profileStats, setProfileStats] = useState<UserProfile>({
-    name: "John Doe",
-    email: "guest@josephfilms.com",
+    name: "",
+    email: "",
     role: "USER",
-    purchasedCount: 2,
-    totalDonations: 150.0,
+    purchasedCount: 0,
+    totalDonations: 0,
   });
   const [purchasedMovies, setPurchasedMovies] = useState<Movie[]>([]);
   const [contributions, setContributions] = useState<Contribution[]>([]);
@@ -101,14 +101,15 @@ export default function DashboardPage() {
     window.location.href = "/login";
   };
 
-  const userInitials = profileStats.name
-    ? profileStats.name
+  const displayName = profileStats.name || user?.name || "";
+  const userInitials = displayName
+    ? displayName
         .split(" ")
         .map((n) => n[0])
         .join("")
         .toUpperCase()
         .slice(0, 2)
-    : "JD";
+    : "";
 
   return (
     <div className="min-h-screen bg-[#030306] pt-28 pb-24 overflow-x-hidden relative">
@@ -169,7 +170,7 @@ export default function DashboardPage() {
               transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="text-2xl md:text-3xl font-serif font-black text-white mb-1"
             >
-              {profileStats.name}
+              {displayName}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0 }}
@@ -177,7 +178,7 @@ export default function DashboardPage() {
               transition={{ delay: 0.3 }}
               className="text-white/40 text-sm mb-6"
             >
-              {profileStats.email}
+              {profileStats.email || user?.email}
             </motion.p>
 
             {/* Action Buttons */}
