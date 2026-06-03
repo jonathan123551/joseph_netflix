@@ -8,7 +8,7 @@ export interface Movie {
   videoUrl?: string;
   rating: string;
   duration: string;
-  year: number;
+  year?: number;
   rentPrice: number;
   buyPrice: number;
   director?: string;
@@ -17,6 +17,76 @@ export interface Movie {
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-1871f.up.railway.app';
+
+// Format a runtime given in minutes (e.g. 131) into "2h 11m".
+function formatRuntime(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (typeof value !== "number" || !isFinite(value) || value <= 0) return "";
+  const hours = Math.floor(value / 60);
+  const mins = Math.round(value % 60);
+  if (hours <= 0) return `${mins}m`;
+  return `${hours}h ${mins}m`;
+}
+
+// The backend exposes movies in two shapes: a pre-shaped row (the /categories
+// feed) and a raw Prisma record (/movies, /movies/:id, /movies/featured) with
+// `assets`, `ageRating`, `releaseDate`, `price`, `actors` and `categories`.
+// Normalize both into the flat `Movie` shape the UI renders.
+export function normalizeMovie(raw: any): Movie {
+  if (!raw) return raw;
+
+  const assets: any[] = Array.isArray(raw.assets) ? raw.assets : [];
+  const posterAsset = assets.find((a) => a?.type === "POSTER")?.url;
+  const bannerAsset = assets.find((a) => a?.type === "BANNER")?.url;
+
+  const poster = raw.posterUrl || posterAsset || raw.bannerUrl || bannerAsset || "";
+  const banner = raw.bannerUrl || bannerAsset || raw.posterUrl || posterAsset || "";
+
+  const year =
+    raw.year ||
+    (raw.releaseDate ? new Date(raw.releaseDate).getFullYear() : undefined);
+
+  const genres: string[] =
+    (Array.isArray(raw.genres) && raw.genres.length ? raw.genres : undefined) ||
+    (Array.isArray(raw.categories)
+      ? raw.categories.map((c: any) => c?.title || c?.name).filter(Boolean)
+      : []);
+
+  const cast: string[] =
+    (Array.isArray(raw.cast) && raw.cast.length ? raw.cast : undefined) ||
+    (Array.isArray(raw.actors)
+      ? raw.actors.map((a: any) => a?.actor?.name || a?.name).filter(Boolean)
+      : []);
+
+  // The backend stores a single `price` (the purchase price). Derive a sensible
+  // rental price so Rent vs Buy reads clearly in the UI.
+  const buyPrice =
+    raw.buyPrice != null ? Number(raw.buyPrice) : raw.price != null ? Number(raw.price) : 0;
+  const rentPrice =
+    raw.rentPrice != null
+      ? Number(raw.rentPrice)
+      : buyPrice > 0
+        ? Math.max(2.99, Math.round(buyPrice * 0.3 * 100) / 100)
+        : 0;
+
+  return {
+    id: String(raw.id),
+    title: raw.title,
+    description: raw.description,
+    posterUrl: poster,
+    bannerUrl: banner,
+    trailerUrl: raw.trailerUrl,
+    videoUrl: raw.videoUrl,
+    rating: raw.rating || raw.ageRating || "NR",
+    duration: formatRuntime(raw.duration),
+    year,
+    rentPrice,
+    buyPrice,
+    director: raw.director,
+    cast,
+    genres,
+  };
+}
 
 // Helper for parsing raw cookies
 function getCookie(name: string): string | undefined {
@@ -98,11 +168,19 @@ class ApiClient {
 
   // MOVIES API
   async getFeaturedMovie(): Promise<Movie> {
-    return this.request<Movie>('/movies/featured');
+    const raw = await this.request<any>('/movies/featured');
+    return normalizeMovie(raw);
   }
 
+  // Returns raw movie records (admin management relies on the unmapped fields).
   async getAllMovies(): Promise<any[]> {
     return this.request<any[]>('/movies');
+  }
+
+  // Browse-friendly catalog: raw records mapped into the flat `Movie` shape.
+  async getCatalog(): Promise<Movie[]> {
+    const raw = await this.request<any[]>('/movies');
+    return Array.isArray(raw) ? raw.map(normalizeMovie) : [];
   }
 
   // ADMIN API
@@ -115,7 +193,8 @@ class ApiClient {
   }
 
   async getMovieDetails(id: string): Promise<Movie> {
-    return this.request<Movie>(`/movies/${id}`);
+    const raw = await this.request<any>(`/movies/${id}`);
+    return normalizeMovie(raw);
   }
 
   async searchMovies(query: string): Promise<any[]> {
@@ -125,8 +204,9 @@ class ApiClient {
   }
 
   // FAVORITES API
-  async getFavorites(): Promise<any[]> {
-    return this.request<any[]>('/favorites');
+  async getFavorites(): Promise<Movie[]> {
+    const raw = await this.request<any[]>('/favorites');
+    return Array.isArray(raw) ? raw.map(normalizeMovie) : [];
   }
 
   async addFavorite(movieId: string): Promise<any> {
@@ -165,7 +245,8 @@ class ApiClient {
   }
 
   async getMyLibrary(): Promise<Movie[]> {
-    return this.request<Movie[]>('/purchases/my-library');
+    const raw = await this.request<any[]>('/purchases/my-library');
+    return Array.isArray(raw) ? raw.map(normalizeMovie) : [];
   }
 
   // DONATIONS API

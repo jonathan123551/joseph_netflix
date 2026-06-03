@@ -39,6 +39,7 @@ function normalizeMovie(m: any): AdminMovie {
 export default function AdminOverviewPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [movies, setMovies] = useState<AdminMovie[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
@@ -48,16 +49,18 @@ export default function AdminOverviewPage() {
         setMovies(m.map(normalizeMovie));
       } catch (err) {
         console.error("Failed to load admin stats:", err);
+      } finally {
+        setLoading(false);
       }
     }
     load();
   }, []);
 
   const metrics = [
-    { label: "Total Revenue", value: stats ? currency(stats.totalRevenue) : "\u2014", icon: DollarSign, color: "text-gold-400", bg: "bg-gold-400/10" },
-    { label: "Active Users", value: stats ? stats.totalUsers.toLocaleString() : "\u2014", icon: Users, color: "text-blue-400", bg: "bg-blue-400/10" },
-    { label: "Total Movies", value: stats ? stats.totalMovies.toLocaleString() : "\u2014", icon: Film, color: "text-purple-400", bg: "bg-purple-400/10" },
-    { label: "Donations", value: stats ? currency(stats.totalDonations) : "\u2014", icon: TrendingUp, color: "text-emerald-400", bg: "bg-emerald-400/10" },
+    { label: "Total Revenue", hint: "Rentals + purchases", value: stats ? currency(stats.totalRevenue) : "\u2014", icon: DollarSign, color: "text-gold-400", bg: "bg-gold-400/10" },
+    { label: "Active Users", hint: "Registered patrons", value: stats ? stats.totalUsers.toLocaleString() : "\u2014", icon: Users, color: "text-blue-400", bg: "bg-blue-400/10" },
+    { label: "Total Movies", hint: "In the library", value: stats ? stats.totalMovies.toLocaleString() : "\u2014", icon: Film, color: "text-purple-400", bg: "bg-purple-400/10" },
+    { label: "Donations", hint: "Ministry support raised", value: stats ? currency(stats.totalDonations) : "\u2014", icon: TrendingUp, color: "text-emerald-400", bg: "bg-emerald-400/10" },
   ];
 
   return (
@@ -79,7 +82,12 @@ export default function AdminOverviewPage() {
                 <stat.icon className="w-5 h-5" />
               </div>
             </div>
-            <h3 className="text-4xl font-serif font-black text-white tracking-tight relative text-glow-gold drop-shadow-md">{stat.value}</h3>
+            {loading ? (
+              <div className="h-10 w-28 rounded-lg bg-white/5 animate-pulse" />
+            ) : (
+              <h3 className="text-4xl font-serif font-black text-white tracking-tight relative text-glow-gold drop-shadow-md">{stat.value}</h3>
+            )}
+            <p className="text-[10px] text-white/30 mt-2 relative">{stat.hint}</p>
           </motion.div>
         ))}
       </div>
@@ -103,7 +111,29 @@ export default function AdminOverviewPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
-              {movies.slice(0, 5).map((movie) => (
+              {loading &&
+                [1, 2, 3, 4].map((i) => (
+                  <tr key={`sk-${i}`} className="border-b border-white/5 last:border-0">
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-16 rounded-lg bg-white/5 animate-pulse" />
+                        <div className="h-4 w-40 rounded bg-white/5 animate-pulse" />
+                      </div>
+                    </td>
+                    <td className="px-8 py-5"><div className="h-3 w-12 rounded bg-white/5 animate-pulse" /></td>
+                    <td className="px-8 py-5"><div className="h-3 w-10 rounded bg-white/5 animate-pulse" /></td>
+                    <td className="px-8 py-5"><div className="h-5 w-20 rounded-full bg-white/5 animate-pulse" /></td>
+                    <td className="px-8 py-5" />
+                  </tr>
+                ))}
+              {!loading && movies.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-8 py-12 text-center text-white/40 text-sm">
+                    No movies yet. Use <span className="text-gold-400 font-semibold">Movies</span> to add your first title.
+                  </td>
+                </tr>
+              )}
+              {!loading && movies.slice(0, 5).map((movie) => (
                 <tr key={movie.id} className="hover:bg-white/5 transition-colors group cursor-pointer border-b border-white/5 last:border-0">
                   <td className="px-8 py-5 flex items-center gap-4">
                     <div className="w-12 h-16 rounded-lg overflow-hidden border border-white/10 shadow-lg group-hover:scale-105 transition-transform">

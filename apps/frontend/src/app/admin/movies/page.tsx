@@ -87,7 +87,15 @@ export default function AdminMoviesPage() {
     }
   };
 
-  if (loading) return <div className="text-white">Loading...</div>;
+  if (loading)
+    return (
+      <div className="space-y-4">
+        <div className="h-10 w-40 rounded-xl bg-white/5 animate-pulse" />
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="h-16 rounded-2xl bg-white/5 animate-pulse" />
+        ))}
+      </div>
+    );
 
   if (isCreating || editingMovie) {
     const m = isCreating ? {} as Partial<AdminMovie> : editingMovie!;

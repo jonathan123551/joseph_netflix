@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   Search, Bell, Film, X, Menu, LogOut, Settings,
-  Heart, BookOpen, HandHeart, Home, Library, User
+  Heart, BookOpen, HandHeart, Home, Library, User, Shield
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SearchModal } from "./SearchModal";
@@ -38,11 +38,15 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const isAdmin = user?.role === "ADMIN";
+
   const navLinks = [
     { href: "/", label: "Home", icon: Home },
     { href: "/dashboard", label: "Library", icon: Library },
+    { href: "/my-list", label: "My List", icon: Heart },
     { href: "/ministries", label: "Ministries", icon: BookOpen },
     { href: "/donate", label: "Donate", icon: HandHeart },
+    ...(isAdmin ? [{ href: "/admin", label: "Admin", icon: Shield }] : []),
   ];
 
   return (
@@ -144,6 +148,12 @@ export function Navbar() {
                     <div className="py-1.5">
                       {user ? (
                         <>
+                          {isAdmin && (
+                            <Link href="/admin" onClick={() => setIsProfileOpen(false)}
+                              className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-gold-400/90 hover:text-gold-400 hover:bg-gold-500/[0.07] transition-colors border-b border-white/[0.07] mb-1">
+                              <Shield className="w-3.5 h-3.5" /> Admin Dashboard
+                            </Link>
+                          )}
                           <Link href="/dashboard" onClick={() => setIsProfileOpen(false)}
                             className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-white/65 hover:text-white hover:bg-white/[0.05] transition-colors">
                             <Library className="w-3.5 h-3.5" /> My Library

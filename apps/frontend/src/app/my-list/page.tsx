@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { MovieCard } from "@/components/shared/MovieCard";
 import { api } from "@/lib/api";
 import { Movie } from "@/lib/api";
-import { Film, PlayCircle, Loader2 } from "lucide-react";
+import { Film, PlayCircle } from "lucide-react";
 
 export default function MyListPage() {
   const [favorites, setFavorites] = useState<Movie[]>([]);
@@ -112,7 +113,11 @@ export default function MyListPage() {
                   ))}
                 </div>
               ) : (
-                <EmptyState icon={<PlayCircle className="w-8 h-8 text-white/20" />} message="No active watch sessions." />
+                <EmptyState
+                  icon={<PlayCircle className="w-8 h-8 text-white/20" />}
+                  message="No active watch sessions yet."
+                  hint="Press play on any film and it'll pick up right here."
+                />
               )}
             </section>
 
@@ -141,7 +146,12 @@ export default function MyListPage() {
                   </AnimatePresence>
                 </div>
               ) : (
-                <EmptyState icon={<Film className="w-8 h-8 text-white/20" />} message="Your watchlist is empty." />
+                <EmptyState
+                  icon={<Film className="w-8 h-8 text-white/20" />}
+                  message="Your watchlist is empty."
+                  hint="Tap the heart on any film to save it here for later."
+                  cta
+                />
               )}
             </section>
           </div>
@@ -151,13 +161,32 @@ export default function MyListPage() {
   );
 }
 
-function EmptyState({ icon, message }: { icon: React.ReactNode; message: string }) {
+function EmptyState({
+  icon,
+  message,
+  hint,
+  cta,
+}: {
+  icon: React.ReactNode;
+  message: string;
+  hint?: string;
+  cta?: boolean;
+}) {
   return (
-    <div className="w-full py-16 rounded-2xl border border-white/5 bg-white/[0.02] flex flex-col items-center justify-center text-center space-y-4">
+    <div className="w-full py-16 px-6 rounded-2xl border border-white/5 bg-white/[0.02] flex flex-col items-center justify-center text-center space-y-3">
       <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center">
         {icon}
       </div>
-      <p className="text-white/40 font-medium text-sm">{message}</p>
+      <p className="text-white/60 font-semibold text-sm">{message}</p>
+      {hint && <p className="text-white/30 text-xs max-w-xs">{hint}</p>}
+      {cta && (
+        <Link href="/">
+          <button className="mt-2 btn-cinematic px-6 py-2.5 rounded-full text-xs font-bold text-zinc-950 cursor-pointer"
+            style={{ background: 'linear-gradient(135deg, #dfba73, #d4a359)', boxShadow: '0 0 20px rgba(212,163,89,0.25)' }}>
+            Browse Films
+          </button>
+        </Link>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, Film, DollarSign, TrendingUp, Search, Bell, Settings, PieChart, ShoppingCart, Heart } from "lucide-react";
+import { Users, Film, TrendingUp, Search, Bell, PieChart, ShoppingCart, Heart, BookOpen, ArrowLeft } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
@@ -36,7 +36,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "Users", href: "/admin/users", icon: Users },
     { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
     { name: "Donations", href: "/admin/donations", icon: Heart },
-    { name: "Ministries", href: "/admin/ministries", icon: Users }, // we can use another icon if needed
+    { name: "Ministries", href: "/admin/ministries", icon: BookOpen },
   ];
 
   return (
@@ -67,8 +67,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
         
         <div className="mt-auto space-y-2">
-          <Link href="/admin/settings" className="flex items-center gap-3 px-3 py-2 text-white/60 hover:text-white hover:bg-white/5 rounded-md transition-colors font-medium">
-            <Settings className="w-5 h-5" /> Settings
+          <Link href="/" className="flex items-center gap-3 px-4 py-3 text-white/60 hover:text-gold-400 hover:bg-white/5 rounded-xl transition-colors font-medium">
+            <ArrowLeft className="w-5 h-5" /> Back to Platform
           </Link>
         </div>
       </aside>
@@ -95,6 +95,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </button>
           </div>
         </div>
+
+        {/* Mobile nav (sidebar is hidden on small screens) */}
+        <nav className="md:hidden -mx-6 px-6 mb-8 flex gap-2 overflow-x-auto scrollbar-none pb-1">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                  isActive
+                    ? "bg-gold-500/10 text-gold-400 border border-gold-500/25"
+                    : "text-white/55 hover:text-white bg-white/5 border border-transparent"
+                }`}
+              >
+                <item.icon className="w-3.5 h-3.5" /> {item.name}
+              </Link>
+            );
+          })}
+        </nav>
 
         {children}
       </main>
