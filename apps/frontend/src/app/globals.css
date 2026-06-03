@@ -175,6 +175,14 @@ body {
   text-shadow: 0 0 10px rgba(212,163,89,0.85), 0 0 30px rgba(212,163,89,0.55), 0 0 65px rgba(212,163,89,0.28);
 }
 
+.text-gradient-gold {
+  background: linear-gradient(135deg, #fbf6eb 0%, #dfba73 45%, #c58d41 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
 .text-shimmer {
   background: linear-gradient(90deg, #c58d41 0%, #fbf6eb 25%, #dfba73 50%, #fbf6eb 75%, #c58d41 100%);
   background-size: 200% auto;

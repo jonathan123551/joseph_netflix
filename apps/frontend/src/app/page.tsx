@@ -125,11 +125,11 @@ export default function HomePage() {
                   <span className="text-white/45 text-xs font-medium">{(featured as any).duration}</span>
                 </>
               )}
-              {(featured as any).genre && (
+              {featured.genres && featured.genres[0] && (
                 <>
                   <span className="w-1 h-1 rounded-full bg-white/18" />
                   <span className="px-2.5 py-0.5 rounded-full glass-gold text-[10px] font-semibold text-gold-400 tracking-wide">
-                    {(featured as any).genre}
+                    {featured.genres[0]}
                   </span>
                 </>
               )}

@@ -89,7 +89,7 @@ export function MovieCard({ movie }: MovieCardProps) {
       >
         {/* Poster */}
         <img
-          src={(movie as any).thumbnailUrl || movie.bannerUrl}
+          src={movie.posterUrl || (movie as any).thumbnailUrl || movie.bannerUrl}
           alt={movie.title}
           className="w-full h-full object-cover transition-transform duration-700"
           style={{ transform: isHovered ? 'scale(1.07)' : 'scale(1)' }}
@@ -138,10 +138,10 @@ export function MovieCard({ movie }: MovieCardProps) {
                   {(movie as any).year && (
                     <span className="text-[9px] text-white/38 font-medium">{(movie as any).year}</span>
                   )}
-                  {(movie as any).genre && (
+                  {movie.genres && movie.genres[0] && (
                     <span className="px-1.5 py-px rounded text-[8px] font-semibold text-gold-400/80"
                       style={{ background: 'rgba(212,163,89,0.1)', border: '1px solid rgba(212,163,89,0.18)' }}>
-                      {(movie as any).genre}
+                      {movie.genres[0]}
                     </span>
                   )}
                   {(movie as any).rating && (

@@ -30,7 +30,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
         if (details) {
           setMovie(details);
           try {
-            const allMovies = await api.getAllMovies();
+            const allMovies = await api.getCatalog();
             setSimilarMovies(allMovies.filter((m: Movie) => m.id !== details.id).slice(0, 6));
           } catch (e) {}
         }
@@ -141,11 +141,15 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             >
-              {(movie as any).genre && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-gold-400 glass-gold">
-                  <Sparkles className="w-3 h-3" />
-                  {(movie as any).genre}
-                </span>
+              {movie.genres && movie.genres.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {movie.genres.slice(0, 3).map((g) => (
+                    <span key={g} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-gold-400 glass-gold">
+                      <Sparkles className="w-3 h-3" />
+                      {g}
+                    </span>
+                  ))}
+                </div>
               )}
             </motion.div>
 
@@ -232,22 +236,6 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                 </button>
               </Link>
               <button
-                id="detail-rent-btn"
-                onClick={handleRent}
-                className="flex items-center gap-2 px-5 py-3.5 rounded-full glass-panel text-white/75 font-semibold text-sm hover:text-white hover:border-white/25 transition-all cursor-pointer"
-              >
-                <Tv className="w-4 h-4" />
-                {checkoutStep === "rented" ? "Rented!" : "Rent"}
-              </button>
-              <button
-                id="detail-buy-btn"
-                onClick={handleBuy}
-                className="flex items-center gap-2 px-5 py-3.5 rounded-full glass-panel text-white/75 font-semibold text-sm hover:text-white hover:border-white/25 transition-all cursor-pointer"
-              >
-                <ShoppingBag className="w-4 h-4" />
-                {checkoutStep === "purchased" ? "Purchased!" : "Buy"}
-              </button>
-              <button
                 id="detail-fav-btn"
                 onClick={handleToggleFavorite}
                 className="p-3.5 rounded-full glass-panel transition-all cursor-pointer"
@@ -269,12 +257,77 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
             </motion.div>
           </div>
 
-          {/* ── Right Column: Donation Panel ── */}
-          <div className="lg:col-span-4 lg:sticky lg:top-28">
+          {/* ── Right Column: Commerce + Donation ── */}
+          <div className="lg:col-span-4 lg:sticky lg:top-28 space-y-6">
+
+            {/* Get this Film — Rent vs Buy */}
             <motion.div
               initial={{ opacity: 0, x: 24 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ delay: 0.34, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+              className="glass-panel-heavy rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.7)] relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 right-0 h-px"
+                style={{ background: 'linear-gradient(to right, transparent, rgba(212,163,89,0.6), transparent)' }} />
+
+              <h3 className="text-sm font-bold text-white mb-1">Get this Film</h3>
+              <p className="text-xs text-white/40 mb-5 leading-relaxed">
+                Choose how you&apos;d like to watch. Both unlock instant streaming in HD.
+              </p>
+
+              {/* Rent option */}
+              <button
+                id="detail-rent-btn"
+                onClick={handleRent}
+                className="w-full text-left rounded-2xl p-4 mb-3 transition-all cursor-pointer group"
+                style={{
+                  background: checkoutStep === 'rented' ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.04)',
+                  border: `1px solid ${checkoutStep === 'rented' ? 'rgba(34,197,94,0.35)' : 'rgba(255,255,255,0.1)'}`,
+                }}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="flex items-center gap-2 text-sm font-bold text-white">
+                    <Tv className="w-4 h-4 text-gold-400" /> Rent
+                  </span>
+                  <span className="text-base font-black text-gold-400">
+                    {checkoutStep === 'rented' ? 'Rented!' : `$${movie.rentPrice.toFixed(2)}`}
+                  </span>
+                </div>
+                <p className="text-[11px] text-white/45 leading-relaxed">
+                  48-hour streaming access once you press play. Great for a one-time watch.
+                </p>
+              </button>
+
+              {/* Buy option */}
+              <button
+                id="detail-buy-btn"
+                onClick={handleBuy}
+                className="w-full text-left rounded-2xl p-4 transition-all cursor-pointer group relative overflow-hidden"
+                style={{
+                  background: checkoutStep === 'purchased' ? 'rgba(34,197,94,0.1)' : 'rgba(212,163,89,0.08)',
+                  border: `1px solid ${checkoutStep === 'purchased' ? 'rgba(34,197,94,0.35)' : 'rgba(212,163,89,0.3)'}`,
+                }}
+              >
+                <span className="absolute top-2.5 right-3 text-[8px] font-bold uppercase tracking-[0.18em] text-gold-400/70">Best value</span>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="flex items-center gap-2 text-sm font-bold text-white">
+                    <ShoppingBag className="w-4 h-4 text-gold-400" /> Buy
+                  </span>
+                  <span className="text-base font-black text-gold-400">
+                    {checkoutStep === 'purchased' ? 'Purchased!' : `$${movie.buyPrice.toFixed(2)}`}
+                  </span>
+                </div>
+                <p className="text-[11px] text-white/45 leading-relaxed">
+                  Own it forever. Watch unlimited times, anytime, across all your devices.
+                </p>
+              </button>
+            </motion.div>
+
+            {/* Donation Panel */}
+            <motion.div
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.46, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
               className="glass-divine rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.7)] relative overflow-hidden"
             >
               {/* Top gold bar */}
@@ -283,10 +336,10 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
 
               <div className="flex items-center gap-2 mb-1">
                 <Heart className="w-4 h-4 text-gold-400" />
-                <h3 className="text-sm font-bold text-white">Support this Film</h3>
+                <h3 className="text-sm font-bold text-white">Donate to the Mission</h3>
               </div>
               <p className="text-xs text-white/40 mb-5 leading-relaxed">
-                Your support helps create more inspiring Christian content for families worldwide.
+                Separate from renting or buying — donations fund new Christian films and keep stories free for families who can&apos;t afford them.
               </p>
 
               {/* Donation Presets */}
