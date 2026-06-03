@@ -38,7 +38,7 @@ export function MovieRow({ title, movies, viewAllHref }: MovieRowProps) {
 
   if (!movies || movies.length === 0) return null;
 
-  const rowSlug = title.replace(/\s+/g, '-').toLowerCase();
+  const rowSlug = title.replace(/\s+/g, "-").toLowerCase();
 
   return (
     <div className="space-y-4 pt-8 group/row">
@@ -47,7 +47,7 @@ export function MovieRow({ title, movies, viewAllHref }: MovieRowProps) {
         <h2 className="flex items-center gap-3">
           <span
             className="w-[3px] h-5 rounded-full flex-shrink-0"
-            style={{ background: 'linear-gradient(to bottom, #ebd19b, #d4a359, #a77030)' }}
+            style={{ background: "linear-gradient(to bottom, #ebd19b, #d4a359, #a77030)" }}
           />
           <span className="text-[15px] md:text-base font-display font-semibold tracking-wider text-white/65 group-hover/row:text-white transition-colors duration-300">
             {title}
@@ -66,49 +66,43 @@ export function MovieRow({ title, movies, viewAllHref }: MovieRowProps) {
 
       {/* Scrollable Row */}
       <div className="relative group/scroll">
-        {/* Left Fade + Arrow */}
+        {/* Left Arrow */}
         <motion.div
           animate={{ opacity: canScrollLeft ? 1 : 0 }}
           transition={{ duration: 0.2 }}
           className="absolute left-0 top-0 bottom-0 z-20 flex items-center pointer-events-none"
           style={{ width: 80 }}
         >
-          <div
-            className="absolute inset-0"
-            style={{ background: 'linear-gradient(to right, #030306, transparent)' }}
-          />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to right, #030306, transparent)" }} />
           <button
             id={`row-left-${rowSlug}`}
             onClick={() => handleScroll("left")}
-            className="relative z-10 ml-3 w-9 h-9 rounded-full glass-panel-heavy flex items-center justify-center text-white/60 hover:text-white hover:border-gold-400/30 transition-all cursor-pointer pointer-events-auto"
+            className="relative z-10 ml-3 w-9 h-9 rounded-full glass-panel-heavy flex items-center justify-center text-white/60 hover:text-white transition-all cursor-pointer pointer-events-auto"
             aria-label="Scroll left"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
         </motion.div>
 
-        {/* Right Fade + Arrow */}
+        {/* Right Arrow */}
         <motion.div
           animate={{ opacity: canScrollRight ? 1 : 0 }}
           transition={{ duration: 0.2 }}
           className="absolute right-0 top-0 bottom-0 z-20 flex items-center justify-end pointer-events-none"
           style={{ width: 80 }}
         >
-          <div
-            className="absolute inset-0"
-            style={{ background: 'linear-gradient(to left, #030306, transparent)' }}
-          />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to left, #030306, transparent)" }} />
           <button
             id={`row-right-${rowSlug}`}
             onClick={() => handleScroll("right")}
-            className="relative z-10 mr-3 w-9 h-9 rounded-full glass-panel-heavy flex items-center justify-center text-white/60 hover:text-white hover:border-gold-400/30 transition-all cursor-pointer pointer-events-auto"
+            className="relative z-10 mr-3 w-9 h-9 rounded-full glass-panel-heavy flex items-center justify-center text-white/60 hover:text-white transition-all cursor-pointer pointer-events-auto"
             aria-label="Scroll right"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
         </motion.div>
 
-        {/* Cards */}
+        {/* Cards — no Link wrapper to avoid nested anchors */}
         <div
           ref={rowRef}
           onScroll={updateScrollState}
@@ -122,11 +116,9 @@ export function MovieRow({ title, movies, viewAllHref }: MovieRowProps) {
               viewport={{ once: true, margin: "-30px" }}
               transition={{ duration: 0.45, delay: idx * 0.04, ease: [0.16, 1, 0.3, 1] }}
               className="flex-shrink-0"
-              style={{ width: 'clamp(120px, 17vw, 176px)' }}
+              style={{ width: "clamp(120px, 17vw, 176px)" }}
             >
-              <Link href={`/movie/${movie.id}`}>
-                <MovieCard movie={movie} />
-              </Link>
+              <MovieCard movie={movie} />
             </motion.div>
           ))}
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import {
   Play, Heart, ShoppingBag, Tv, Share2, Check,
@@ -21,7 +21,6 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
   const [customDonation, setCustomDonation] = useState("");
   const [checkoutStep, setCheckoutStep] = useState<"idle" | "donated" | "purchased" | "rented">("idle");
   const [isFavorite, setIsFavorite] = useState(false);
-  const [isPlayingTrailer, setIsPlayingTrailer] = useState(false);
 
   useEffect(() => {
     async function loadMovieData() {
@@ -32,11 +31,11 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
           try {
             const allMovies = await api.getAllMovies();
             setSimilarMovies(allMovies.filter((m: Movie) => m.id !== details.id).slice(0, 6));
-          } catch (e) {}
+          } catch (_e) {}
         }
-        const favorites = await api.getFavorites();
-        setIsFavorite(favorites.some((f: any) => f.id === movieId));
-      } catch (err) {
+        const favs = await api.getFavorites();
+        setIsFavorite(favs.some((f: any) => f.id === movieId));
+      } catch (_err) {
         console.warn("Could not retrieve movie details from API.");
       }
     }
@@ -46,13 +45,13 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
   const handleBuy = async () => {
     if (!movie) return;
     try { await api.buyMovie(movie.id); setCheckoutStep("purchased"); setTimeout(() => setCheckoutStep("idle"), 4000); }
-    catch (err) { console.error(err); }
+    catch (_err) {}
   };
 
   const handleRent = async () => {
     if (!movie) return;
     try { await api.rentMovie(movie.id); setCheckoutStep("rented"); setTimeout(() => setCheckoutStep("idle"), 4000); }
-    catch (err) { console.error(err); }
+    catch (_err) {}
   };
 
   const handleToggleFavorite = async () => {
@@ -62,17 +61,16 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
     try {
       if (next) await api.addFavorite(movie.id);
       else await api.removeFavorite(movie.id);
-    } catch (err) { setIsFavorite(!next); }
+    } catch (_err) { setIsFavorite(!next); }
   };
 
   const handleDonate = async () => {
     const amt = donationAmount || Number(customDonation);
     if (!amt || isNaN(amt)) return;
     try { await api.submitDonation(amt); setCheckoutStep("donated"); setTimeout(() => setCheckoutStep("idle"), 4000); }
-    catch (err) { console.error(err); }
+    catch (_err) {}
   };
 
-  // Loading skeleton
   if (!movie) {
     return (
       <div className="min-h-screen bg-[#030306] pt-32 pb-24 px-4 md:px-12">
@@ -80,10 +78,10 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
           <div className="w-48 h-8 rounded-xl skeleton" />
           <div className="w-3/4 h-16 rounded-2xl skeleton" />
           <div className="flex gap-3">
-            {[1,2,3].map(i => <div key={i} className="w-20 h-5 rounded skeleton" />)}
+            {[1, 2, 3].map(i => <div key={i} className="w-20 h-5 rounded skeleton" />)}
           </div>
           <div className="space-y-3">
-            {[1,2,3].map(i => <div key={i} className="w-full h-4 rounded skeleton" style={{ width: i === 3 ? '60%' : '100%' }} />)}
+            {[1, 2, 3].map(i => <div key={i} className="w-full h-4 rounded skeleton" style={{ width: i === 3 ? "60%" : "100%" }} />)}
           </div>
           <div className="w-full aspect-video rounded-2xl skeleton" />
         </div>
@@ -97,7 +95,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
     <div className="min-h-screen bg-[#030306] pb-24 overflow-x-hidden relative">
       <div className="grain-overlay" />
 
-      {/* ── Cinematic Banner ── */}
+      {/* Cinematic Banner */}
       <div className="absolute top-0 left-0 right-0 h-[75vh] z-0 overflow-hidden">
         <motion.img
           src={movie.bannerUrl}
@@ -105,19 +103,16 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
           className="w-full h-full object-cover object-top"
           initial={{ scale: 1.08 }}
           animate={{ scale: 1 }}
-          transition={{ duration: 8, ease: 'linear' }}
+          transition={{ duration: 8, ease: "linear" }}
         />
-        {/* Multi-layer fade to dark */}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(3,3,6,0.25) 0%, rgba(3,3,6,0.6) 60%, #030306 100%)' }} />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(3,3,6,0.7) 0%, transparent 50%)' }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(3,3,6,0.25) 0%, rgba(3,3,6,0.6) 60%, #030306 100%)" }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(3,3,6,0.7) 0%, transparent 50%)" }} />
       </div>
 
-      {/* Ambient Glow */}
       <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] radial-glow-gold rounded-full filter blur-[160px] opacity-12 mix-blend-screen pointer-events-none animate-pulse-slow" />
 
-      {/* ── Content ── */}
+      {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 md:pt-36">
-        {/* Back Button */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -132,15 +127,9 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
 
-          {/* ── Left Column ── */}
+          {/* Left Column */}
           <div className="lg:col-span-8 space-y-8">
-
-            {/* Genre Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}>
               {(movie as any).genre && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-gold-400 glass-gold">
                   <Sparkles className="w-3 h-3" />
@@ -149,7 +138,6 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               )}
             </motion.div>
 
-            {/* Title */}
             <motion.h1
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
@@ -159,7 +147,6 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               {movie.title}
             </motion.h1>
 
-            {/* Meta Row */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -168,13 +155,9 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
             >
               {(movie as any).rating && (
                 <div className="flex items-center gap-1.5">
-                  {[1,2,3,4,5].map(star => (
+                  {[1, 2, 3, 4, 5].map(star => (
                     <Star key={star}
-                      className={`w-4 h-4 ${
-                        star <= Math.round(Number((movie as any).rating) / 2)
-                          ? 'fill-gold-400 text-gold-400'
-                          : 'text-white/20'
-                      }`}
+                      className={`w-4 h-4 ${star <= Math.round(Number((movie as any).rating) / 2) ? "fill-gold-400 text-gold-400" : "text-white/20"}`}
                     />
                   ))}
                   <span className="text-xs text-white/45 ml-1">{(movie as any).rating}</span>
@@ -194,13 +177,12 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               )}
               {(movie as any).language && (
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide"
-                  style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.1)" }}>
                   {(movie as any).language}
                 </span>
               )}
             </motion.div>
 
-            {/* Description */}
             {(movie as any).description && (
               <motion.p
                 initial={{ opacity: 0, y: 16 }}
@@ -212,7 +194,6 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               </motion.p>
             )}
 
-            {/* Action Buttons */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -220,56 +201,38 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               className="flex items-center gap-3 flex-wrap"
             >
               <Link href={`/watch/${movie.id}`}>
-                <button
-                  id="detail-watch-btn"
+                <button id="detail-watch-btn"
                   className="btn-cinematic flex items-center gap-2.5 px-7 py-3.5 rounded-full font-bold text-sm text-zinc-950 cursor-pointer"
-                  style={{
-                    background: 'linear-gradient(135deg, #dfba73, #d4a359, #c58d41)',
-                    boxShadow: '0 0 25px rgba(212,163,89,0.4), 0 4px 15px rgba(0,0,0,0.4)'
-                  }}
+                  style={{ background: "linear-gradient(135deg, #dfba73, #d4a359, #c58d41)", boxShadow: "0 0 25px rgba(212,163,89,0.4), 0 4px 15px rgba(0,0,0,0.4)" }}
                 >
                   <Play className="w-4 h-4 fill-current" /> Watch Now
                 </button>
               </Link>
-              <button
-                id="detail-rent-btn"
-                onClick={handleRent}
-                className="flex items-center gap-2 px-5 py-3.5 rounded-full glass-panel text-white/75 font-semibold text-sm hover:text-white hover:border-white/25 transition-all cursor-pointer"
-              >
+              <button id="detail-rent-btn" onClick={handleRent}
+                className="flex items-center gap-2 px-5 py-3.5 rounded-full glass-panel text-white/75 font-semibold text-sm hover:text-white hover:border-white/25 transition-all cursor-pointer">
                 <Tv className="w-4 h-4" />
                 {checkoutStep === "rented" ? "Rented!" : "Rent"}
               </button>
-              <button
-                id="detail-buy-btn"
-                onClick={handleBuy}
-                className="flex items-center gap-2 px-5 py-3.5 rounded-full glass-panel text-white/75 font-semibold text-sm hover:text-white hover:border-white/25 transition-all cursor-pointer"
-              >
+              <button id="detail-buy-btn" onClick={handleBuy}
+                className="flex items-center gap-2 px-5 py-3.5 rounded-full glass-panel text-white/75 font-semibold text-sm hover:text-white hover:border-white/25 transition-all cursor-pointer">
                 <ShoppingBag className="w-4 h-4" />
                 {checkoutStep === "purchased" ? "Purchased!" : "Buy"}
               </button>
-              <button
-                id="detail-fav-btn"
-                onClick={handleToggleFavorite}
+              <button id="detail-fav-btn" onClick={handleToggleFavorite}
                 className="p-3.5 rounded-full glass-panel transition-all cursor-pointer"
-                style={{
-                  borderColor: isFavorite ? 'rgba(248,113,113,0.4)' : undefined,
-                  color: isFavorite ? 'rgba(248,113,113,0.9)' : 'rgba(255,255,255,0.5)',
-                }}
-                aria-label="Toggle favorite"
-              >
-                <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+                style={{ color: isFavorite ? "rgba(248,113,113,0.9)" : "rgba(255,255,255,0.5)" }}
+                aria-label="Toggle favorite">
+                <Heart className={`w-4 h-4 ${isFavorite ? "fill-current" : ""}`} />
               </button>
-              <button
-                id="detail-share-btn"
+              <button id="detail-share-btn"
                 className="p-3.5 rounded-full glass-panel text-white/45 hover:text-white transition-all cursor-pointer"
-                aria-label="Share"
-              >
+                aria-label="Share">
                 <Share2 className="w-4 h-4" />
               </button>
             </motion.div>
           </div>
 
-          {/* ── Right Column: Donation Panel ── */}
+          {/* Donation Sidebar */}
           <div className="lg:col-span-4 lg:sticky lg:top-28">
             <motion.div
               initial={{ opacity: 0, x: 24 }}
@@ -277,9 +240,8 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               transition={{ delay: 0.4, duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
               className="glass-divine rounded-3xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.7)] relative overflow-hidden"
             >
-              {/* Top gold bar */}
               <div className="absolute top-0 left-0 right-0 h-px"
-                style={{ background: 'linear-gradient(to right, transparent, rgba(212,163,89,0.6), transparent)' }} />
+                style={{ background: "linear-gradient(to right, transparent, rgba(212,163,89,0.6), transparent)" }} />
 
               <div className="flex items-center gap-2 mb-1">
                 <Heart className="w-4 h-4 text-gold-400" />
@@ -289,59 +251,43 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                 Your support helps create more inspiring Christian content for families worldwide.
               </p>
 
-              {/* Donation Presets */}
               <div className="grid grid-cols-2 gap-2 mb-4">
                 {donationPresets.map(amt => (
-                  <button
-                    key={amt}
-                    id={`donate-${amt}`}
+                  <button key={amt} id={`donate-${amt}`}
                     onClick={() => { setDonationAmount(amt); setCustomDonation(""); }}
                     className="py-2.5 rounded-xl text-sm font-bold transition-all duration-200 cursor-pointer"
                     style={{
-                      background: donationAmount === amt ? 'rgba(212,163,89,0.15)' : 'rgba(255,255,255,0.04)',
-                      border: `1px solid ${donationAmount === amt ? 'rgba(212,163,89,0.4)' : 'rgba(255,255,255,0.08)'}`,
-                      color: donationAmount === amt ? '#dfba73' : 'rgba(255,255,255,0.6)',
-                      boxShadow: donationAmount === amt ? '0 0 15px rgba(212,163,89,0.1)' : 'none',
-                    }}
-                  >
+                      background: donationAmount === amt ? "rgba(212,163,89,0.15)" : "rgba(255,255,255,0.04)",
+                      border: `1px solid ${donationAmount === amt ? "rgba(212,163,89,0.4)" : "rgba(255,255,255,0.08)"}`,
+                      color: donationAmount === amt ? "#dfba73" : "rgba(255,255,255,0.6)",
+                    }}>
                     ${amt}
                   </button>
                 ))}
               </div>
 
-              {/* Custom Input */}
               <div className="relative mb-4">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 text-sm font-semibold">$</span>
-                <input
-                  id="donate-custom-input"
-                  type="number"
-                  placeholder="Custom amount"
+                <input id="donate-custom-input" type="number" placeholder="Custom amount"
                   value={customDonation}
                   onChange={e => { setCustomDonation(e.target.value); setDonationAmount(null); }}
                   className="w-full pl-8 pr-4 py-3 rounded-xl text-sm text-white placeholder-white/25 outline-none transition-all"
-                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
-                  min="1"
-                />
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  min="1" />
               </div>
 
-              {/* Donate Button */}
-              <button
-                id="donate-submit-btn"
-                onClick={handleDonate}
+              <button id="donate-submit-btn" onClick={handleDonate}
                 className="btn-cinematic w-full py-3.5 rounded-xl font-bold text-sm transition-all cursor-pointer flex items-center justify-center gap-2"
                 style={{
-                  background: checkoutStep === 'donated'
-                    ? 'rgba(34,197,94,0.15)'
-                    : 'linear-gradient(135deg, #dfba73, #d4a359)',
-                  border: checkoutStep === 'donated' ? '1px solid rgba(34,197,94,0.3)' : 'none',
-                  color: checkoutStep === 'donated' ? '#22c55e' : '#030306',
-                  boxShadow: checkoutStep === 'donated' ? 'none' : '0 0 20px rgba(212,163,89,0.3)',
-                }}
-              >
-                {checkoutStep === 'donated' ? (
+                  background: checkoutStep === "donated" ? "rgba(34,197,94,0.15)" : "linear-gradient(135deg, #dfba73, #d4a359)",
+                  border: checkoutStep === "donated" ? "1px solid rgba(34,197,94,0.3)" : "none",
+                  color: checkoutStep === "donated" ? "#22c55e" : "#030306",
+                  boxShadow: checkoutStep === "donated" ? "none" : "0 0 20px rgba(212,163,89,0.3)",
+                }}>
+                {checkoutStep === "donated" ? (
                   <><Check className="w-4 h-4" /> Thank you!</>
                 ) : (
-                  <><Heart className="w-4 h-4" /> Donate{donationAmount ? ` $${donationAmount}` : customDonation ? ` $${customDonation}` : ''}</>
+                  <><Heart className="w-4 h-4" /> Donate{donationAmount ? ` $${donationAmount}` : customDonation ? ` $${customDonation}` : ""}</>
                 )}
               </button>
             </motion.div>
@@ -353,7 +299,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
+            viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="mt-16"
           >
