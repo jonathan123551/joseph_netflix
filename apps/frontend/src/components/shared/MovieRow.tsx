@@ -1,72 +1,135 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { MovieCard } from "./MovieCard";
 import { Movie } from "@/lib/api";
+import { motion } from "framer-motion";
+import Link from "next/link";
 
 interface MovieRowProps {
   title: string;
   movies: Movie[];
+  viewAllHref?: string;
 }
 
-export function MovieRow({ title, movies }: MovieRowProps) {
+export function MovieRow({ title, movies, viewAllHref }: MovieRowProps) {
   const rowRef = useRef<HTMLDivElement>(null);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const updateScrollState = () => {
+    if (!rowRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = rowRef.current;
+    setCanScrollLeft(scrollLeft > 8);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 8);
+  };
 
   const handleScroll = (direction: "left" | "right") => {
     if (rowRef.current) {
-      const { scrollLeft, clientWidth } = rowRef.current;
-      const scrollTo = direction === "left" 
-        ? scrollLeft - clientWidth * 0.75 
-        : scrollLeft + clientWidth * 0.75;
-      
-      rowRef.current.scrollTo({ left: scrollTo, behavior: "smooth" });
+      rowRef.current.scrollBy({
+        left: direction === "left"
+          ? -(rowRef.current.clientWidth * 0.75)
+          : rowRef.current.clientWidth * 0.75,
+        behavior: "smooth",
+      });
     }
   };
 
-  return (
-    <div className="space-y-4 pt-4 group/row">
-      {/* Cinematic Heading with Outfits display font */}
-      <h2 className="text-lg md:text-xl font-display font-semibold tracking-wider text-white/80 px-4 md:px-12 transition-colors duration-300 group-hover/row:text-white flex items-center gap-3">
-        <span className="w-1.5 h-6 bg-gold-500 rounded-full" />
-        {title}
-      </h2>
-      
-      <div className="relative group/arrows">
-        {/* Left Arrow with Frosted Blur */}
-        <button
-          className={`absolute left-0 top-0 bottom-0 w-12 bg-black/40 backdrop-blur-md z-30 opacity-0 group-hover/arrows:opacity-100 transition-all duration-300 hover:bg-black/70 flex items-center justify-center border-r border-white/5
-            ${isScrolled ? "pointer-events-auto" : "pointer-events-none !opacity-0"}
-          `}
-          onClick={() => handleScroll("left")}
-        >
-          <ChevronLeft className="w-6 h-6 text-white transition-transform hover:scale-125" />
-        </button>
+  if (!movies || movies.length === 0) return null;
 
-        {/* Scroll Container with cards sized correctly */}
-        <div 
-          ref={rowRef}
-          onScroll={(e) => setIsScrolled(e.currentTarget.scrollLeft > 10)}
-          className="flex items-center gap-4 overflow-x-auto no-scrollbar px-4 md:px-12 pb-6 pt-2 snap-x"
+  const rowSlug = title.replace(/\s+/g, '-').toLowerCase();
+
+  return (
+    <div className="space-y-4 pt-8 group/row">
+      {/* Section Header */}
+      <div className="flex items-center justify-between px-4 md:px-12">
+        <h2 className="flex items-center gap-3">
+          <span
+            className="w-[3px] h-5 rounded-full flex-shrink-0"
+            style={{ background: 'linear-gradient(to bottom, #ebd19b, #d4a359, #a77030)' }}
+          />
+          <span className="text-[15px] md:text-base font-display font-semibold tracking-wider text-white/65 group-hover/row:text-white transition-colors duration-300">
+            {title}
+          </span>
+        </h2>
+        {viewAllHref && (
+          <Link
+            href={viewAllHref}
+            className="flex items-center gap-1 text-[10px] uppercase tracking-[0.15em] font-semibold text-gold-400/55 hover:text-gold-400 transition-colors group/link"
+          >
+            See All
+            <ArrowRight className="w-3 h-3 group-hover/link:translate-x-0.5 transition-transform" />
+          </Link>
+        )}
+      </div>
+
+      {/* Scrollable Row */}
+      <div className="relative group/scroll">
+        {/* Left Fade + Arrow */}
+        <motion.div
+          animate={{ opacity: canScrollLeft ? 1 : 0 }}
+          transition={{ duration: 0.2 }}
+          className="absolute left-0 top-0 bottom-0 z-20 flex items-center pointer-events-none"
+          style={{ width: 80 }}
         >
-          {movies.map((movie) => (
-            <div 
-              key={movie.id} 
-              className="snap-start shrink-0 w-[240px] sm:w-[280px] md:w-[320px]"
+          <div
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(to right, #030306, transparent)' }}
+          />
+          <button
+            id={`row-left-${rowSlug}`}
+            onClick={() => handleScroll("left")}
+            className="relative z-10 ml-3 w-9 h-9 rounded-full glass-panel-heavy flex items-center justify-center text-white/60 hover:text-white hover:border-gold-400/30 transition-all cursor-pointer pointer-events-auto"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+        </motion.div>
+
+        {/* Right Fade + Arrow */}
+        <motion.div
+          animate={{ opacity: canScrollRight ? 1 : 0 }}
+          transition={{ duration: 0.2 }}
+          className="absolute right-0 top-0 bottom-0 z-20 flex items-center justify-end pointer-events-none"
+          style={{ width: 80 }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(to left, #030306, transparent)' }}
+          />
+          <button
+            id={`row-right-${rowSlug}`}
+            onClick={() => handleScroll("right")}
+            className="relative z-10 mr-3 w-9 h-9 rounded-full glass-panel-heavy flex items-center justify-center text-white/60 hover:text-white hover:border-gold-400/30 transition-all cursor-pointer pointer-events-auto"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </motion.div>
+
+        {/* Cards */}
+        <div
+          ref={rowRef}
+          onScroll={updateScrollState}
+          className="flex gap-3 overflow-x-auto px-4 md:px-12 pb-6 scrollbar-none"
+        >
+          {movies.map((movie, idx) => (
+            <motion.div
+              key={movie.id}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-30px" }}
+              transition={{ duration: 0.45, delay: idx * 0.04, ease: [0.16, 1, 0.3, 1] }}
+              className="flex-shrink-0"
+              style={{ width: 'clamp(120px, 17vw, 176px)' }}
             >
-              <MovieCard movie={movie} />
-            </div>
+              <Link href={`/movie/${movie.id}`}>
+                <MovieCard movie={movie} />
+              </Link>
+            </motion.div>
           ))}
         </div>
-
-        {/* Right Arrow with Frosted Blur */}
-        <button
-          className="absolute right-0 top-0 bottom-0 w-12 bg-black/40 backdrop-blur-md z-30 opacity-0 group-hover/arrows:opacity-100 transition-all duration-300 hover:bg-black/70 flex items-center justify-center border-l border-white/5"
-          onClick={() => handleScroll("right")}
-        >
-          <ChevronRight className="w-6 h-6 text-white transition-transform hover:scale-125" />
-        </button>
       </div>
     </div>
   );
