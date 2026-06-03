@@ -25,8 +25,8 @@ export default function LoginPage() {
       } else {
         setError("Invalid email or password. Use your email to access the guest demo.");
       }
-    } catch (err) {
-      setError("Authentication service is unavailable. Please try again.");
+    } catch (err: any) {
+      setError(err.message || "Authentication service is unavailable. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

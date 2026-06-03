@@ -5,11 +5,13 @@ import Link from "next/link";
 import { Search, Bell, User, Film, Compass, Library } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SearchModal } from "./SearchModal";
+import { useAuth } from "@/context/AuthContext";
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -108,7 +110,7 @@ export function Navbar() {
                     >
                       <div className="px-4 py-3 border-b border-white/5 mb-1">
                         <p className="text-xs text-white/40 font-semibold tracking-wider uppercase">Signed In As</p>
-                        <p className="text-sm font-semibold text-white/95 truncate">guest@josephfilms.com</p>
+                        <p className="text-sm font-semibold text-white/95 truncate">{user?.email || "Guest"}</p>
                       </div>
                       <Link 
                         href="/dashboard" 
@@ -127,13 +129,15 @@ export function Navbar() {
                         Switch Account
                       </Link>
                       <div className="border-t border-white/5 mt-1 pt-1">
-                        <Link 
-                          href="/login" 
-                          onClick={() => setIsProfileOpen(false)}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                        <button 
+                          onClick={() => {
+                            setIsProfileOpen(false);
+                            logout();
+                          }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
                         >
                           Sign Out
-                        </Link>
+                        </button>
                       </div>
                     </motion.div>
                   </>
